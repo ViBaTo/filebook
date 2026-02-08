@@ -6,7 +6,7 @@ import UserMenu from './UserMenu'
 interface AuthStatusProps {
   user: {
     id: string
-    email: string
+    email?: string
     user_metadata?: {
       full_name?: string
     }

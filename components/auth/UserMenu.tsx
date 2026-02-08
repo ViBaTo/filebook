@@ -8,7 +8,7 @@ import UserAvatar from '@/components/ui/UserAvatar'
 interface UserMenuProps {
   user: {
     id: string
-    email: string
+    email?: string
     user_metadata?: {
       full_name?: string
     }
@@ -21,7 +21,7 @@ export default function UserMenu({ user }: UserMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
   // Get display name
-  const displayName = user.user_metadata?.full_name || user.email.split('@')[0]
+  const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario'
 
   // Close dropdown when clicking outside
   useEffect(() => {
