@@ -1,29 +1,29 @@
 'use client'
 
 interface ProcessingProgressProps {
-  currentPage: number
-  totalPages: number
+  progress: number
   status: 'loading' | 'rendering' | 'uploading' | 'complete' | 'error'
+  statusText?: string
   error?: string
 }
 
 export function ProcessingProgress({
-  currentPage,
-  totalPages,
+  progress,
   status,
+  statusText,
   error
 }: ProcessingProgressProps) {
-  const progress =
-    totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : 0
+  const clampedProgress = Math.min(100, Math.max(0, progress))
 
   const getStatusText = () => {
+    if (statusText) return statusText
     switch (status) {
       case 'loading':
         return 'Loading PDF...'
       case 'rendering':
-        return `Rendering page ${currentPage} of ${totalPages}...`
+        return 'Rendering pages...'
       case 'uploading':
-        return `Uploading page ${currentPage} of ${totalPages}...`
+        return 'Uploading pages...'
       case 'complete':
         return 'Processing complete!'
       case 'error':
@@ -96,31 +96,12 @@ export function ProcessingProgress({
               <div className='h-3 bg-white/10 rounded-full overflow-hidden'>
                 <div
                   className='h-full bg-gradient-to-r from-[#e94560] to-[#ff6b8a] transition-all duration-300'
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${clampedProgress}%` }}
                 />
               </div>
               <p className='text-sm text-gray-400 mt-2 text-center'>
-                {progress}% complete
+                {clampedProgress}% complete
               </p>
-            </div>
-          )}
-
-          {/* Page thumbnails preview */}
-          {totalPages > 0 && status !== 'error' && (
-            <div className='flex items-center gap-1 mt-2'>
-              {Array.from({ length: Math.min(totalPages, 10) }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    i < currentPage ? 'bg-[#e94560]' : 'bg-white/20'
-                  }`}
-                />
-              ))}
-              {totalPages > 10 && (
-                <span className='text-xs text-gray-400 ml-1'>
-                  +{totalPages - 10}
-                </span>
-              )}
             </div>
           )}
         </div>

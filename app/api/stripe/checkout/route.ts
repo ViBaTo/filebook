@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe, PLANS, type PlanType } from '@/lib/stripe/config'
+import { getStripe, PLANS, type PlanType } from '@/lib/stripe/config'
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     let customerId = existingSubscription?.stripe_customer_id
+    const stripe = getStripe()
 
     // Create Stripe customer if not exists
     if (!customerId) {

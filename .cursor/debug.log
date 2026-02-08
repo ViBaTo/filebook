@@ -1,0 +1,4 @@
+{"location":"create/page.tsx:uploadFile","message":"H1: auth state in PDFUploaderWithCapture","data":{"hasUser":true,"userId":"b689180a-e843-42fd-be74-7e7998d623ce","authError":null},"hypothesisId":"H1","timestamp":1770585336661}
+{"location":"create/page.tsx:storage","message":"H5: storage upload result","data":{"uploadSuccess":true,"uploadErrorMsg":null},"hypothesisId":"H5","timestamp":1770585340306}
+{"location":"create/page.tsx:insert","message":"H2: insert data before fb_books insert","data":{"user_id":"b689180a-e843-42fd-be74-7e7998d623ce","is_anonymous":false,"slug":"qyo95wqi"},"hypothesisId":"H2","timestamp":1770585340307}
+{"location":"create/page.tsx:insertResult","message":"H2: insert result","data":{"insertSuccess":true,"insertErrorMsg":null,"insertErrorCode":null,"bookId":"05ab397c-808c-4de8-a23d-ae030e5ae360"},"hypothesisId":"H2","timestamp":1770585340398}

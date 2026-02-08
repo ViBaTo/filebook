@@ -12,6 +12,7 @@ interface FlipBookViewerProps {
   autoFlipSeconds?: number
   onPageChange?: (page: number) => void
   className?: string
+  ownerName?: string | null
 }
 
 const FLIP_DURATION = 600 // ms
@@ -23,7 +24,8 @@ export function FlipBookViewer({
   showControls = true,
   autoFlipSeconds = 0,
   onPageChange,
-  className = ''
+  className = '',
+  ownerName
 }: FlipBookViewerProps) {
   // currentSpread tracks which two-page spread we're viewing
   // Spread 0 = cover only, Spread 1 = pages 1-2, etc.
@@ -44,22 +46,6 @@ export function FlipBookViewer({
   // Total spreads = 1 (cover) + ceil((totalPages - 1) / 2)
   const totalSpreads = 1 + Math.ceil((totalPages - 1) / 2)
 
-  // #region agent log
-  useEffect(() => {
-    const nullPages = pages.map((p, i) => (!p ? i : null)).filter(v => v !== null);
-    const emptyPages = pages.map((p, i) => (p === '' ? i : null)).filter(v => v !== null);
-    const spreadMap: Record<number, {left: number, right: number, leftDisplay: number, rightDisplay: number}> = {};
-    for (let s = 0; s < totalSpreads; s++) {
-      const li = s === 0 ? -1 : (s - 1) * 2 + 1;
-      const ri = s === 0 ? 0 : (s - 1) * 2 + 2;
-      const ld = s === 0 ? -1 : (s - 1) * 2 + 2;
-      const rd = s === 0 ? 1 : (s - 1) * 2 + 3;
-      spreadMap[s] = {left: li, right: ri, leftDisplay: ld, rightDisplay: rd};
-    }
-    fetch('http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FlipBookViewer.tsx:INIT',message:'Pages array and spread map',data:{totalPages,totalSpreads,nullPages,emptyPages,spreadMap,allUrls:pages.map((u,i)=>({i,hasUrl:!!u,urlStart:u?.substring(0,60)}))},hypothesisId:'A,C,D,E',timestamp:Date.now()})}).catch(()=>{});
-  }, [pages, totalPages, totalSpreads]);
-  // #endregion
-
   // Calculate page indices for current spread
   const isCoverSpread = currentSpread === 0
 
@@ -69,14 +55,6 @@ export function FlipBookViewer({
   const rightPageIndex = isCoverSpread ? 0 : (currentSpread - 1) * 2 + 2
   const hasLeftPage = leftPageIndex >= 0 && leftPageIndex < totalPages
   const hasRightPage = rightPageIndex < totalPages
-
-  // #region agent log
-  useEffect(() => {
-    const leftLoaded = hasLeftPage ? loadedImages.has(leftPageIndex) : 'N/A';
-    const rightLoaded = hasRightPage ? loadedImages.has(rightPageIndex) : 'N/A';
-    fetch('http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FlipBookViewer.tsx:SPREAD',message:'Current spread info',data:{currentSpread,totalSpreads,isCoverSpread,leftPageIndex,rightPageIndex,hasLeftPage,hasRightPage,leftLoaded,rightLoaded,loadedImagesCount:loadedImages.size,leftUrl:hasLeftPage?pages[leftPageIndex]?.substring(0,80):'none',rightUrl:hasRightPage?pages[rightPageIndex]?.substring(0,80):'none'},hypothesisId:'C,D',timestamp:Date.now()})}).catch(()=>{});
-  }, [currentSpread, loadedImages.size]);
-  // #endregion
 
   // Preload adjacent spreads
   useEffect(() => {
@@ -101,16 +79,8 @@ export function FlipBookViewer({
       if (!loadedImages.has(pageIndex)) {
         const img = new Image()
         img.onload = () => {
-          // #region agent log
-          fetch('http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FlipBookViewer.tsx:PRELOAD_OK',message:'Image loaded',data:{pageIndex,url:pages[pageIndex]?.substring(0,80)},hypothesisId:'B',timestamp:Date.now()})}).catch(()=>{});
-          // #endregion
           setLoadedImages((prev) => new Set([...prev, pageIndex]))
         }
-        // #region agent log
-        img.onerror = () => {
-          fetch('http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FlipBookViewer.tsx:PRELOAD_ERR',message:'Image FAILED to load',data:{pageIndex,url:pages[pageIndex]?.substring(0,80)},hypothesisId:'B',timestamp:Date.now()})}).catch(()=>{});
-        };
-        // #endregion
         img.src = pages[pageIndex]
       }
     })
@@ -235,10 +205,22 @@ export function FlipBookViewer({
 
   return (
     <div className={`relative w-full h-full flex flex-col ${className}`}>
-      {/* Title */}
-      {title && (
-        <div className='text-center py-4'>
-          <h1 className='text-xl font-medium text-white'>{title}</h1>
+      {/* Title & Owner */}
+      {(title || ownerName) && (
+        <div className='text-center py-2 shrink-0'>
+          {title && (
+            <h1 className='text-xl font-medium text-white leading-tight'>{title}</h1>
+          )}
+          {ownerName && (
+            <div className='flex items-center justify-center gap-1.5'>
+              <div className='w-4 h-4 rounded-full bg-gradient-to-br from-[#e94560] to-[#d63d56] flex items-center justify-center text-white text-[9px] font-semibold shrink-0'>
+                {ownerName.charAt(0).toUpperCase()}
+              </div>
+              <span className='text-xs text-gray-400'>
+                Creado por {ownerName}
+              </span>
+            </div>
+          )}
         </div>
       )}
 

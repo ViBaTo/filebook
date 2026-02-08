@@ -1,10 +1,20 @@
 import Stripe from 'stripe'
 
-// Server-side Stripe instance
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-01-28.clover',
-  typescript: true
-})
+// Server-side Stripe instance (lazy initialized to avoid build-time errors)
+let _stripe: Stripe | null = null
+
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not set')
+    }
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2026-01-28.clover',
+      typescript: true
+    })
+  }
+  return _stripe
+}
 
 // Lookup keys for Stripe prices - create these in your Stripe Dashboard
 export const LOOKUP_KEYS = {

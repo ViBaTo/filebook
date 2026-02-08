@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe, PLANS, type PlanType } from '@/lib/stripe/config'
+import { getStripe, PLANS, type PlanType } from '@/lib/stripe/config'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 
-// Use service role for webhook handling
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazy-init supabase admin to avoid build-time errors
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -20,6 +22,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  const stripe = getStripe()
   let event: Stripe.Event
 
   try {
@@ -88,6 +91,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   // Handle one-time payment (single flipbook purchase)
   if (paymentType === 'one_time' && plan === 'single') {
     // Get current credits
+    const supabaseAdmin = getSupabaseAdmin()
     const { data: existing } = await supabaseAdmin
       .from('fb_subscriptions')
       .select('premium_credits')
@@ -97,7 +101,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     const currentCredits = existing?.premium_credits || 0
 
     // Add one premium credit
-    await supabaseAdmin.from('fb_subscriptions').upsert({
+    await getSupabaseAdmin().from('fb_subscriptions').upsert({
       user_id: userId,
       stripe_customer_id: session.customer as string,
       premium_credits: currentCredits + 1,
@@ -112,7 +116,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   }
 
   // Handle subscription payment
-  await supabaseAdmin.from('fb_subscriptions').upsert({
+  await getSupabaseAdmin().from('fb_subscriptions').upsert({
     user_id: userId,
     stripe_customer_id: session.customer as string,
     stripe_subscription_id: session.subscription as string,
@@ -134,7 +138,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
   if (!userId) {
     // Try to find by customer ID
-    const { data } = await supabaseAdmin
+    const { data } = await getSupabaseAdmin()
       .from('fb_subscriptions')
       .select('user_id')
       .eq('stripe_subscription_id', subscription.id)
@@ -167,7 +171,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       ? new Date(subAny.current_period_end * 1000).toISOString()
       : null
 
-  await supabaseAdmin
+  await getSupabaseAdmin()
     .from('fb_subscriptions')
     .update({
       status,
@@ -180,7 +184,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   // Downgrade to free plan
-  await supabaseAdmin
+  await getSupabaseAdmin()
     .from('fb_subscriptions')
     .update({
       plan: 'free',
@@ -204,7 +208,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   const subscriptionId = invoiceAny.subscription as string | null
 
   if (subscriptionId) {
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('fb_subscriptions')
       .update({ status: 'past_due' })
       .eq('stripe_subscription_id', subscriptionId)
