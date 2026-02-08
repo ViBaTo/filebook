@@ -2,7 +2,7 @@
 
 interface UserAvatarProps {
   name?: string
-  email: string
+  email?: string
   size?: 'sm' | 'md' | 'lg'
 }
 
@@ -14,7 +14,7 @@ export default function UserAvatar({ name, email, size = 'md' }: UserAvatarProps
       return name.trim().charAt(0).toUpperCase()
     }
     // Fallback to first letter of email
-    return email.charAt(0).toUpperCase()
+    return (email ?? 'U').charAt(0).toUpperCase()
   }
 
   // Size variants
