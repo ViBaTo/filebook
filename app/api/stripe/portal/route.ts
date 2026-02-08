@@ -1,0 +1,47 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { stripe } from '@/lib/stripe/config'
+
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'You must be logged in' },
+        { status: 401 }
+      )
+    }
+
+    // Get user's Stripe customer ID
+    const { data: subscription } = await supabase
+      .from('fb_subscriptions')
+      .select('stripe_customer_id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!subscription?.stripe_customer_id) {
+      return NextResponse.json(
+        { error: 'No subscription found' },
+        { status: 404 }
+      )
+    }
+
+    // Create billing portal session
+    const session = await stripe.billingPortal.sessions.create({
+      customer: subscription.stripe_customer_id,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+    })
+
+    return NextResponse.json({ url: session.url })
+  } catch (error) {
+    console.error('Error creating portal session:', error)
+    return NextResponse.json(
+      { error: 'Failed to create portal session' },
+      { status: 500 }
+    )
+  }
+}
