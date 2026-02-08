@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { EmbedViewerWrapper } from './EmbedViewerWrapper'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }

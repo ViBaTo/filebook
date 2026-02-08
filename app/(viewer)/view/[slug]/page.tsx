@@ -4,6 +4,8 @@ import { FlipBookViewerWrapper } from './FlipBookViewerWrapper'
 import { ShareButton } from './ShareButton'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }
