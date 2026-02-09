@@ -1,6 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import {
+  TransformWrapper,
+  TransformComponent,
+  ReactZoomPanPinchRef
+} from 'react-zoom-pan-pinch'
 import { FlipPage } from './FlipPage'
 import { FlipControls } from './FlipControls'
 
@@ -36,7 +41,9 @@ export function FlipBookViewer({
     null
   )
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set())
+  const [currentZoom, setCurrentZoom] = useState(1)
   const containerRef = useRef<HTMLDivElement>(null)
+  const transformRef = useRef<ReactZoomPanPinchRef>(null)
 
   const totalPages = pages.length
 
@@ -79,6 +86,9 @@ export function FlipBookViewer({
       if (!loadedImages.has(pageIndex)) {
         const img = new Image()
         img.onload = () => {
+          // #region agent log
+          fetch('http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FlipBookViewer.tsx:preload',message:'Image loaded',data:{pageIndex,url:pages[pageIndex]?.substring(0,80)},hypothesisId:'H5',timestamp:Date.now()})}).catch(()=>{});
+          // #endregion
           setLoadedImages((prev) => new Set([...prev, pageIndex]))
         }
         img.src = pages[pageIndex]
@@ -91,6 +101,9 @@ export function FlipBookViewer({
       if (isAnimating) return
       if (direction === 'next' && currentSpread >= totalSpreads - 1) return
       if (direction === 'prev' && currentSpread <= 0) return
+
+      // Reset zoom before flipping
+      transformRef.current?.resetTransform()
 
       setIsAnimating(true)
       setFlipDirection(direction)
@@ -155,13 +168,15 @@ export function FlipBookViewer({
     }
   }, [autoFlipSeconds, currentSpread, totalSpreads, goToNext, isAnimating])
 
-  // Touch handling
+  // Touch handling - only swipe to navigate when not zoomed in
   const touchStartX = useRef(0)
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (currentZoom > 1) return // Let the zoom library handle panning
     touchStartX.current = e.touches[0].clientX
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    if (currentZoom > 1) return // Let the zoom library handle panning
     const touchEndX = e.changedTouches[0].clientX
     const diff = touchStartX.current - touchEndX
 
@@ -175,21 +190,20 @@ export function FlipBookViewer({
     }
   }
 
-  // Click navigation - click left half for prev, right half for next
-  const handleClick = (e: React.MouseEvent) => {
-    if (!containerRef.current) return
-    const rect = containerRef.current.getBoundingClientRect()
-    const clickX = e.clientX - rect.left
-    const midpoint = rect.width / 2
-
-    if (clickX > midpoint) {
-      goToNext()
-    } else {
-      goToPrev()
-    }
-  }
-
   const isPageLoaded = (index: number) => loadedImages.has(index)
+
+  // #region agent log
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const container = containerRef.current
+      const wrapper = container?.closest('.react-transform-wrapper') as HTMLElement | null
+      const component = container?.closest('.react-transform-component') as HTMLElement | null
+      const parentFlex = wrapper?.parentElement as HTMLElement | null
+      fetch('http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'FlipBookViewer.tsx:useEffect-dims',message:'Element dimensions after mount',data:{container:{w:container?.offsetWidth,h:container?.offsetHeight,cw:container?.clientWidth,ch:container?.clientHeight},wrapper:{w:wrapper?.offsetWidth,h:wrapper?.offsetHeight,style:wrapper?.getAttribute('style')},component:{w:component?.offsetWidth,h:component?.offsetHeight,style:component?.getAttribute('style')},parentFlex:{w:parentFlex?.offsetWidth,h:parentFlex?.offsetHeight},pagesCount:pages.length,rightPageIndex,hasRightPage,isCoverSpread,page0Url:pages[0]?.substring(0,80)},hypothesisId:'H1-H4',timestamp:Date.now()})}).catch(()=>{});
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [])
+  // #endregion
 
   // Calculate next spread page indices for animation
   const nextSpread = currentSpread + 1
@@ -228,12 +242,28 @@ export function FlipBookViewer({
       <div className='flex-1 flex items-center justify-center p-4'>
         <div
           ref={containerRef}
-          className='relative w-full max-w-7xl aspect-[2.8/1] cursor-pointer select-none'
-          style={{ perspective: '2000px' }}
-          onClick={handleClick}
+          className='relative w-full max-w-7xl aspect-[2.8/1] select-none'
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
+          <TransformWrapper
+            ref={transformRef}
+            initialScale={1}
+            minScale={1}
+            maxScale={3}
+            doubleClick={{ mode: 'toggle', step: 0.7 }}
+            wheel={{ step: 0.1 }}
+            panning={{ disabled: currentZoom <= 1 }}
+            onTransformed={(_, state) => setCurrentZoom(state.scale)}
+          >
+            <TransformComponent
+              wrapperStyle={{ width: '100%', height: '100%' }}
+              contentStyle={{ width: '100%', height: '100%' }}
+            >
+              <div
+                className='relative w-full h-full'
+                style={{ perspective: '2000px' }}
+              >
           {/* Book shadow */}
           <div className='absolute inset-x-4 bottom-0 h-8 bg-black/30 blur-xl rounded-full' />
 
@@ -415,6 +445,9 @@ export function FlipBookViewer({
               </div>
             )}
           </>
+              </div>
+            </TransformComponent>
+          </TransformWrapper>
         </div>
       </div>
 
@@ -427,6 +460,10 @@ export function FlipBookViewer({
           onPrev={goToPrev}
           onNext={goToNext}
           isAnimating={isAnimating}
+          onZoomIn={() => transformRef.current?.zoomIn()}
+          onZoomOut={() => transformRef.current?.zoomOut()}
+          onZoomReset={() => transformRef.current?.resetTransform()}
+          currentZoom={currentZoom}
         />
       )}
 
