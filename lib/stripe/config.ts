@@ -23,21 +23,24 @@ export const LOOKUP_KEYS = {
   single: 'flipbook_single_purchase' // One-time payment
 } as const
 
-// Plan configuration
+// Free tier file size limit (MB) - files above this require a paid plan
+export const FREE_FILE_SIZE_LIMIT_MB = 50
+
+// Plan configuration (prices in EUR)
 export const PLANS = {
   free: {
     name: 'Free',
     description: 'Para probar FlipBook',
     price: 0,
+    currency: 'eur',
     lookupKey: null,
     isRecurring: false,
     limits: {
-      maxFileSizeMB: 30,
+      maxFileSizeMB: FREE_FILE_SIZE_LIMIT_MB,
       maxFlipbooks: 3,
       maxPagesPerBook: 50
     },
     features: {
-      removeWatermark: false,
       customDomain: false,
       advancedAnalytics: false,
       passwordProtection: false
@@ -46,16 +49,16 @@ export const PLANS = {
   single: {
     name: 'Pago único',
     description: 'Un flipbook premium',
-    price: 4.99,
+    price: 9.99,
+    currency: 'eur',
     lookupKey: LOOKUP_KEYS.single,
     isRecurring: false,
     limits: {
       maxFileSizeMB: 200,
-      maxFlipbooks: 1, // Per purchase
+      maxFlipbooks: 1, // Per purchase (adds 1 premium credit)
       maxPagesPerBook: 200
     },
     features: {
-      removeWatermark: true,
       customDomain: false,
       advancedAnalytics: true,
       passwordProtection: true
@@ -64,7 +67,8 @@ export const PLANS = {
   pro: {
     name: 'Pro',
     description: 'Para creadores y pequeños negocios',
-    price: 2.99,
+    price: 7.99,
+    currency: 'eur',
     lookupKey: LOOKUP_KEYS.pro,
     isRecurring: true,
     limits: {
@@ -73,7 +77,6 @@ export const PLANS = {
       maxPagesPerBook: 200
     },
     features: {
-      removeWatermark: true,
       customDomain: false,
       advancedAnalytics: true,
       passwordProtection: true
@@ -82,7 +85,8 @@ export const PLANS = {
   business: {
     name: 'Business',
     description: 'Para equipos y empresas',
-    price: 14.99,
+    price: 19.99,
+    currency: 'eur',
     lookupKey: LOOKUP_KEYS.business,
     isRecurring: true,
     limits: {
@@ -91,7 +95,6 @@ export const PLANS = {
       maxPagesPerBook: 500
     },
     features: {
-      removeWatermark: true,
       customDomain: true,
       advancedAnalytics: true,
       passwordProtection: true

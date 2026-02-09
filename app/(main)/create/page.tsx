@@ -13,6 +13,7 @@ import {
 type WizardStep = 'upload' | 'processing' | 'done' | 'error'
 
 const COMPRESS_THRESHOLD_MB = 50
+const FREE_FILE_SIZE_LIMIT_MB = 50
 
 interface BookResult {
   id: string
@@ -285,9 +286,9 @@ export default function CreatePage() {
             />
 
             <p className='text-center text-sm text-gray-500 mt-6'>
-              Gratis: Hasta 30MB, 50 páginas.{' '}
+              Gratis: Hasta 50MB, 3 flipbooks, 50 páginas.{' '}
               <a href='/pricing' className='text-[#e94560] hover:underline'>
-                Ver planes
+                ¿Necesitas más? Ver planes
               </a>
             </p>
           </div>
@@ -481,6 +482,43 @@ function PDFUploaderWithCapture({
     onUploadStart?.()
 
     try {
+      // Validate limits before uploading
+      const fileSizeMB = file.size / (1024 * 1024)
+      const validateRes = await fetch('/api/books/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileSizeMB })
+      })
+      const validateData = await validateRes.json()
+
+      if (!validateRes.ok || !validateData.allowed) {
+        // If needs premium and user has credits, ask for confirmation
+        if (validateData.requiresPremium && validateData.premiumCredits > 0) {
+          const confirmed = window.confirm(
+            `Este archivo requiere un crédito premium. Tienes ${validateData.premiumCredits} crédito(s) disponible(s). ¿Quieres usar uno?`
+          )
+          if (!confirmed) {
+            setIsUploading(false)
+            return
+          }
+          // Consume the credit
+          const consumeRes = await fetch('/api/books/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileSizeMB, consume: true })
+          })
+          const consumeData = await consumeRes.json()
+          if (!consumeRes.ok || !consumeData.allowed) {
+            throw new Error(consumeData.reason || 'No se pudo usar el crédito premium.')
+          }
+        } else {
+          throw new Error(
+            validateData.reason ||
+              `Los archivos de más de ${FREE_FILE_SIZE_LIMIT_MB}MB requieren un plan de pago.`
+          )
+        }
+      }
+
       // Check if user is authenticated
       const {
         data: { user },

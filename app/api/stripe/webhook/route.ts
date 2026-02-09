@@ -126,7 +126,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     max_file_size_mb: planConfig.limits.maxFileSizeMB,
     max_flipbooks: planConfig.limits.maxFlipbooks,
     max_pages_per_book: planConfig.limits.maxPagesPerBook,
-    remove_watermark: planConfig.features.removeWatermark,
+    remove_watermark: true, // Watermark removed for all plans
     custom_domain: planConfig.features.customDomain,
     advanced_analytics: planConfig.features.advancedAnalytics,
     password_protection: planConfig.features.passwordProtection
@@ -194,7 +194,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       max_file_size_mb: PLANS.free.limits.maxFileSizeMB,
       max_flipbooks: PLANS.free.limits.maxFlipbooks,
       max_pages_per_book: PLANS.free.limits.maxPagesPerBook,
-      remove_watermark: false,
+      remove_watermark: true, // Watermark removed for all plans
       custom_domain: false,
       advanced_analytics: false,
       password_protection: false

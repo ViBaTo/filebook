@@ -8,37 +8,35 @@ import { useSearchParams } from 'next/navigation'
 const singlePurchase = {
   id: 'single',
   name: 'Pago único',
-  description: 'Un flipbook premium sin suscripción',
-  price: 4.99,
+  description: 'Para archivos de más de 50MB sin suscripción',
+  price: 9.99,
   period: '',
   lookupKey: 'flipbook_single_purchase',
   features: [
-    'Hasta 200MB',
+    'Hasta 200MB por PDF',
     '200 páginas',
-    'Sin marca de agua',
     'Analytics completos',
     'Protección con contraseña',
     'Sin expiración'
   ],
-  cta: 'Comprar por $4.99'
+  cta: 'Comprar por 9,99€'
 }
 
 const plans = [
   {
     id: 'free',
     name: 'Free',
-    description: 'Para probar FlipBook',
+    description: 'Para empezar con FlipBook',
     price: 0,
     period: '',
     lookupKey: null,
     features: [
-      'Hasta 30MB por PDF',
+      'Hasta 50MB por PDF',
       '3 flipbooks',
       '50 páginas por flipbook',
-      'Analytics básicos',
-      'Expira en 30 días'
+      'Analytics básicos'
     ],
-    limitations: ['Con marca de agua', 'Sin protección con contraseña'],
+    limitations: ['Sin protección con contraseña'],
     cta: 'Empezar gratis',
     popular: false
   },
@@ -46,14 +44,13 @@ const plans = [
     id: 'pro',
     name: 'Pro',
     description: 'Para creadores y pequeños negocios',
-    price: 2.99,
+    price: 7.99,
     period: '/mes',
     lookupKey: 'flipbook_pro_monthly',
     features: [
       'Hasta 200MB por PDF',
       'Flipbooks ilimitados',
       '200 páginas por flipbook',
-      'Sin marca de agua',
       'Analytics avanzados',
       'Protección con contraseña',
       'Sin expiración',
@@ -67,14 +64,13 @@ const plans = [
     id: 'business',
     name: 'Business',
     description: 'Para equipos y empresas',
-    price: 14.99,
+    price: 19.99,
     period: '/mes',
     lookupKey: 'flipbook_business_monthly',
     features: [
       'Hasta 500MB por PDF',
       'Flipbooks ilimitados',
       '500 páginas por flipbook',
-      'Sin marca de agua',
       'Analytics avanzados',
       'Protección con contraseña',
       'Dominio personalizado',
@@ -209,8 +205,7 @@ function PricingContent() {
             Planes simples y transparentes
           </h1>
           <p className='text-xl text-gray-400 max-w-2xl mx-auto'>
-            Empieza gratis con hasta 30MB. Actualiza cuando necesites más
-            capacidad.
+            Empieza gratis y actualiza cuando necesites más capacidad.
           </p>
         </div>
 
@@ -224,11 +219,11 @@ function PricingContent() {
                 </span>
               </div>
               <h2 className='text-2xl font-bold text-white mb-2'>
-                ¿Solo necesitas un flipbook premium?
+                ¿Tu PDF pesa más de 50MB?
               </h2>
               <p className='text-gray-400'>
-                Crea un flipbook sin marca de agua, con hasta 200MB y 200
-                páginas. Sin suscripción.
+                Compra un crédito premium y crea un flipbook con hasta 200MB y
+                200 páginas. Sin suscripción.
               </p>
               <ul className='flex flex-wrap gap-3 mt-4 justify-center md:justify-start'>
                 {singlePurchase.features.slice(0, 4).map((feature, i) => (
@@ -255,7 +250,7 @@ function PricingContent() {
               </ul>
             </div>
             <div className='text-center'>
-              <div className='text-3xl font-bold text-white mb-2'>$4.99</div>
+              <div className='text-3xl font-bold text-white mb-2'>9,99€</div>
               <Button
                 onClick={() =>
                   handleSubscribe(singlePurchase.lookupKey, singlePurchase.id)
@@ -309,7 +304,7 @@ function PricingContent() {
                   ) : (
                     <>
                       <span className='text-4xl font-bold text-white'>
-                        ${plan.price}
+                        {plan.price.toFixed(2).replace('.', ',')}€
                       </span>
                       <span className='text-gray-400'>{plan.period}</span>
                     </>
@@ -378,8 +373,8 @@ function PricingContent() {
           <div className='grid md:grid-cols-2 gap-8 max-w-4xl mx-auto'>
             {[
               {
-                q: '¿Qué incluye el pago único de $4.99?',
-                a: 'El pago único te da un crédito para crear un flipbook premium: hasta 200MB, 200 páginas, sin marca de agua, analytics completos y protección con contraseña. El flipbook nunca expira.'
+                q: '¿Qué incluye el pago único de 9,99€?',
+                a: 'El pago único te da un crédito premium para crear un flipbook con archivos de hasta 200MB, 200 páginas, analytics completos y protección con contraseña. El flipbook nunca expira.'
               },
               {
                 q: '¿Puedo cancelar mi suscripción en cualquier momento?',

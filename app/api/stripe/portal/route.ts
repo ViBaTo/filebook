@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     // Create billing portal session
     const session = await getStripe().billingPortal.sessions.create({
       customer: subscription.stripe_customer_id,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/profile`
     })
 
     return NextResponse.json({ url: session.url })
