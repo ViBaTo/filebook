@@ -218,7 +218,7 @@ export function FlipControls({
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     strokeWidth={2}
-                    d='M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.36-6.36M20 15a9 9 0 01-15.36 6.36'
+                    d='M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4'
                   />
                 </svg>
               </button>

@@ -172,11 +172,13 @@ export function FlipBookViewer({
   const touchStartX = useRef(0)
   const handleTouchStart = (e: React.TouchEvent) => {
     if (currentZoom > 1) return // Let the zoom library handle panning
+    if (e.touches.length > 1) return // Let pinch-to-zoom be handled by the library
     touchStartX.current = e.touches[0].clientX
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (currentZoom > 1) return // Let the zoom library handle panning
+    if (e.changedTouches.length > 1) return // Let pinch-to-zoom be handled by the library
     const touchEndX = e.changedTouches[0].clientX
     const diff = touchStartX.current - touchEndX
 
@@ -251,8 +253,12 @@ export function FlipBookViewer({
             initialScale={1}
             minScale={1}
             maxScale={3}
-            doubleClick={{ mode: 'toggle', step: 0.7 }}
-            wheel={{ step: 0.1 }}
+            doubleClick={{ mode: 'toggle', step: 0.5, animationTime: 300 }}
+            wheel={{ step: 0.05, smoothStep: 0.004 }}
+            pinch={{ step: 5 }}
+            smooth
+            alignmentAnimation={{ sizeX: 100, sizeY: 100, animationTime: 200 }}
+            velocityAnimation={{ sensitivity: 1, animationTime: 200 }}
             panning={{ disabled: currentZoom <= 1 }}
             onTransformed={(_, state) => setCurrentZoom(state.scale)}
           >
