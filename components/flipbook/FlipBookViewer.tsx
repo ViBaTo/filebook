@@ -265,11 +265,11 @@ export function FlipBookViewer({
                 style={{ perspective: '2000px' }}
               >
           {/* Book shadow */}
-          <div className='absolute inset-x-4 bottom-0 h-8 bg-black/30 blur-xl rounded-full' />
+          {/* <div className='absolute inset-x-4 bottom-0 h-8 bg-black/30 blur-xl rounded-full' /> */}
 
           {/* Pages container - two page spread */}
           <div
-            className='absolute inset-0 flex shadow-xl rounded-md'
+            className='absolute inset-0 flex'
             style={{ transformStyle: 'preserve-3d' }}
           >
             {/* Left page container */}
@@ -282,7 +282,7 @@ export function FlipBookViewer({
                 {flipDirection === 'prev' &&
                   prevSpreadLeftIndex >= 0 &&
                   prevSpreadLeftIndex < totalPages && (
-                    <div className='absolute inset-0 bg-[#fefefe] rounded-l-md overflow-hidden'>
+                    <div className='absolute inset-0 bg-transparent overflow-hidden'>
                       {isPageLoaded(prevSpreadLeftIndex) ? (
                         <img
                           src={pages[prevSpreadLeftIndex]}
@@ -300,15 +300,15 @@ export function FlipBookViewer({
 
                 {/* Previous spread's right page for cover transition (when going back to cover) */}
                 {flipDirection === 'prev' && prevSpread === 0 && (
-                  <div className='absolute inset-0 bg-[#fefefe] rounded-l-md overflow-hidden'>
+                  <div className='absolute inset-0 bg-transparent overflow-hidden'>
                     {/* Empty page - cover has no left page */}
-                    <div className='w-full h-full bg-[#fefefe]' />
+                    <div className='w-full h-full bg-transparent' />
                   </div>
                 )}
 
                 {/* Base left page (current) - hidden during 'prev' flip since FlipPage shows it */}
                 {flipDirection !== 'prev' && (
-                  <div className='absolute inset-0 bg-[#fefefe] rounded-l-md overflow-hidden'>
+                  <div className='absolute inset-0 bg-transparent overflow-hidden'>
                     {hasLeftPage && isPageLoaded(leftPageIndex) ? (
                       <img
                         src={pages[leftPageIndex]}
@@ -321,7 +321,7 @@ export function FlipBookViewer({
                         <div className='w-8 h-8 border-2 border-gray-300 border-t-[#e94560] rounded-full animate-spin' />
                       </div>
                     ) : (
-                      <div className='w-full h-full bg-[#fefefe]' />
+                      <div className='w-full h-full bg-transparent' />
                     )}
                   </div>
                 )}
@@ -352,7 +352,7 @@ export function FlipBookViewer({
               {/* Next spread's right page (underneath, revealed when flipping to next) */}
               {flipDirection === 'next' &&
                 nextSpreadRightIndex < totalPages && (
-                  <div className='absolute inset-0 bg-[#fefefe] rounded-r-md overflow-hidden'>
+                  <div className='absolute inset-0 bg-transparent overflow-hidden'>
                     {isPageLoaded(nextSpreadRightIndex) ? (
                       <img
                         src={pages[nextSpreadRightIndex]}
@@ -371,7 +371,7 @@ export function FlipBookViewer({
               {/* Base right page (current) - hidden during 'next' flip since FlipPage shows it */}
               {flipDirection !== 'next' && (
                 <div
-                  className={`${isCoverSpread ? 'relative w-1/2 h-full' : 'absolute inset-0'} bg-[#fefefe] ${isCoverSpread ? 'rounded-md shadow-xl' : 'rounded-r-md'} overflow-hidden`}
+                  className={`${isCoverSpread ? 'relative w-1/2 h-full' : 'absolute inset-0'} bg-transparent overflow-hidden`}
                 >
                   {hasRightPage && isPageLoaded(rightPageIndex) ? (
                     <img
@@ -386,7 +386,7 @@ export function FlipBookViewer({
                     </div>
                   ) : (
                     // Blank page for odd total pages
-                    <div className='w-full h-full bg-[#fefefe]' />
+                    <div className='w-full h-full bg-transparent' />
                   )}
                 </div>
               )}

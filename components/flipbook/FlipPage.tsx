@@ -29,8 +29,8 @@ export function FlipPage({
   const transformOrigin = direction === 'next' ? 'left center' : 'right center'
 
   // Rounding classes based on direction
-  const frontRounding = direction === 'next' ? 'rounded-r-md' : 'rounded-l-md'
-  const backRounding = direction === 'next' ? 'rounded-l-md' : 'rounded-r-md'
+  const frontRounding = ''
+  const backRounding = ''
 
   // Shadow gradient direction
   const frontShadowGradient =
@@ -57,7 +57,7 @@ export function FlipPage({
     >
       {/* Front face - current page content */}
       <div
-        className={`absolute inset-0 ${frontRounding} overflow-hidden bg-[#fefefe]`}
+        className={`absolute inset-0 ${frontRounding} overflow-hidden bg-transparent`}
         style={{
           backfaceVisibility: 'hidden'
         }}
@@ -85,7 +85,7 @@ export function FlipPage({
 
       {/* Back face - other page content */}
       <div
-        className={`absolute inset-0 ${backRounding} overflow-hidden bg-[#fefefe]`}
+        className={`absolute inset-0 ${backRounding} overflow-hidden bg-transparent`}
         style={{
           backfaceVisibility: 'hidden',
           transform: 'rotateY(180deg)'
@@ -99,7 +99,7 @@ export function FlipPage({
             draggable={false}
           />
         ) : (
-          <div className='w-full h-full bg-[#fefefe]' />
+          <div className='w-full h-full bg-transparent' />
         )}
         {/* Shadow overlay on back face */}
         {!showFront && (
@@ -110,14 +110,7 @@ export function FlipPage({
         )}
       </div>
 
-      {/* Page edge thickness effect */}
-      <div
-        className={`absolute ${edgePosition} top-0 bottom-0 w-[3px]`}
-        style={{
-          background: 'linear-gradient(to right, #d0d0d0, #e8e8e8)',
-          transform: 'translateZ(-1px)'
-        }}
-      />
+      {/* Page edge thickness effect - removed for borderless look */}
     </div>
   )
 }
