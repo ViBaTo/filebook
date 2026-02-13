@@ -39,7 +39,7 @@ export default function ManageSubscriptionButton({
     return (
       <Link
         href='/pricing'
-        className='text-sm text-gray-400 hover:text-[#e94560] transition-colors flex items-center gap-1.5'
+        className='text-sm text-stone-500 hover:text-[#166534] transition-colors flex items-center gap-1.5'
       >
         <svg
           className='w-4 h-4'
@@ -63,10 +63,10 @@ export default function ManageSubscriptionButton({
     <button
       onClick={handleManageBilling}
       disabled={isLoading}
-      className='text-sm text-gray-400 hover:text-[#e94560] transition-colors flex items-center gap-1.5 disabled:opacity-50'
+      className='text-sm text-stone-500 hover:text-[#166534] transition-colors flex items-center gap-1.5 disabled:opacity-50'
     >
       {isLoading ? (
-        <div className='w-4 h-4 border-2 border-gray-400/30 border-t-gray-400 rounded-full animate-spin' />
+        <div className='w-4 h-4 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin' />
       ) : (
         <svg
           className='w-4 h-4'

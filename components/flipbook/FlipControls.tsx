@@ -83,7 +83,7 @@ export function FlipControls({
                   w-2 h-2 rounded-full transition-all duration-300
                   ${
                     i === currentSpread
-                      ? 'bg-[#e94560] scale-125'
+                      ? 'bg-[#16a34a] scale-125'
                       : 'bg-white/30 hover:bg-white/50'
                   }
                 `}

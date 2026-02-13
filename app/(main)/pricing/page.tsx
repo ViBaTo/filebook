@@ -174,18 +174,18 @@ function PricingContent() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]'>
+    <div className='min-h-screen bg-[#FAFAF9]'>
       {/* Main */}
-      <main className='max-w-6xl mx-auto px-6 py-16'>
+      <main className='max-w-[1200px] mx-auto px-6 py-16 md:py-24'>
         {/* Messages */}
         {message && (
           <div
-            className={`mb-8 p-4 rounded-lg text-center ${
+            className={`mb-8 p-4 rounded-[10px] text-center ${
               message.type === 'success'
-                ? 'bg-green-500/10 border border-green-500/20 text-green-400'
+                ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
                 : message.type === 'error'
-                  ? 'bg-red-500/10 border border-red-500/20 text-red-400'
-                  : 'bg-yellow-500/10 border border-yellow-500/20 text-yellow-400'
+                  ? 'bg-red-50 border border-red-200 text-red-800'
+                  : 'bg-amber-50 border border-amber-200 text-amber-800'
             }`}
           >
             <p>{message.text}</p>
@@ -201,27 +201,27 @@ function PricingContent() {
         )}
 
         <div className='text-center mb-16'>
-          <h1 className='text-4xl md:text-5xl font-bold text-white mb-4'>
+          <h1 className='serif text-4xl md:text-[56px] md:leading-[64px] text-stone-900 mb-4'>
             Planes simples y transparentes
           </h1>
-          <p className='text-xl text-gray-400 max-w-2xl mx-auto'>
+          <p className='text-lg text-stone-500 max-w-2xl mx-auto'>
             Empieza gratis y actualiza cuando necesites más capacidad.
           </p>
         </div>
 
         {/* Single Purchase Banner */}
-        <div className='mb-12 p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20'>
+        <div className='mb-12 p-6 md:p-8 rounded-[16px] bg-amber-50 border border-amber-200'>
           <div className='flex flex-col md:flex-row items-center justify-between gap-6'>
             <div className='flex-1 text-center md:text-left'>
               <div className='flex items-center justify-center md:justify-start gap-2 mb-2'>
-                <span className='px-2 py-0.5 text-xs font-medium bg-amber-500/20 text-amber-400 rounded'>
+                <span className='px-3 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full'>
                   PAGO ÚNICO
                 </span>
               </div>
-              <h2 className='text-2xl font-bold text-white mb-2'>
+              <h2 className='serif text-2xl text-stone-900 mb-2'>
                 ¿Tu PDF pesa más de 50MB?
               </h2>
-              <p className='text-gray-400'>
+              <p className='text-stone-500'>
                 Compra un crédito premium y crea un flipbook con hasta 200MB y
                 200 páginas. Sin suscripción.
               </p>
@@ -229,10 +229,10 @@ function PricingContent() {
                 {singlePurchase.features.slice(0, 4).map((feature, i) => (
                   <li
                     key={i}
-                    className='flex items-center gap-1 text-sm text-gray-300'
+                    className='flex items-center gap-1 text-sm text-stone-600'
                   >
                     <svg
-                      className='w-4 h-4 text-amber-400'
+                      className='w-4 h-4 text-amber-600'
                       fill='none'
                       viewBox='0 0 24 24'
                       stroke='currentColor'
@@ -250,7 +250,7 @@ function PricingContent() {
               </ul>
             </div>
             <div className='text-center'>
-              <div className='text-3xl font-bold text-white mb-2'>9,99€</div>
+              <div className='text-3xl font-bold text-stone-900 mb-3'>9,99€</div>
               <Button
                 onClick={() =>
                   handleSubscribe(singlePurchase.lookupKey, singlePurchase.id)
@@ -258,7 +258,7 @@ function PricingContent() {
                 isLoading={isLoading === singlePurchase.id}
                 variant='primary'
                 size='lg'
-                className='bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600'
+                className='bg-amber-600 hover:bg-amber-700'
               >
                 Comprar ahora
               </Button>
@@ -266,8 +266,8 @@ function PricingContent() {
           </div>
         </div>
 
-        <div className='text-center mb-8'>
-          <p className='text-gray-400 text-sm'>
+        <div className='text-center mb-10'>
+          <p className='text-stone-400 text-sm'>
             O elige un plan de suscripción
           </p>
         </div>
@@ -277,36 +277,36 @@ function PricingContent() {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`relative rounded-2xl p-8 ${
+              className={`relative rounded-[16px] p-8 bg-white transition-all duration-250 ${
                 plan.popular
-                  ? 'bg-gradient-to-b from-[#e94560]/20 to-transparent border-2 border-[#e94560]/50'
-                  : 'bg-white/5 border border-white/10'
+                  ? 'border-2 border-[#166534] shadow-[0_4px_12px_-2px_rgba(28,25,23,0.08)]'
+                  : 'border border-stone-200 hover:shadow-[0_4px_12px_-2px_rgba(28,25,23,0.08)] hover:border-stone-300'
               }`}
             >
               {plan.popular && (
                 <div className='absolute -top-4 left-1/2 -translate-x-1/2'>
-                  <span className='px-4 py-1 bg-[#e94560] text-white text-sm font-medium rounded-full'>
+                  <span className='px-4 py-1 bg-[#166534] text-white text-sm font-medium rounded-full'>
                     Más popular
                   </span>
                 </div>
               )}
 
               <div className='text-center mb-8'>
-                <h2 className='text-2xl font-bold text-white mb-2'>
+                <h2 className='serif text-2xl text-stone-900 mb-2'>
                   {plan.name}
                 </h2>
-                <p className='text-gray-400 text-sm mb-4'>{plan.description}</p>
+                <p className='text-stone-500 text-sm mb-4'>{plan.description}</p>
                 <div className='flex items-baseline justify-center gap-1'>
                   {plan.price === 0 ? (
-                    <span className='text-4xl font-bold text-white'>
+                    <span className='text-4xl font-bold text-stone-900'>
                       Gratis
                     </span>
                   ) : (
                     <>
-                      <span className='text-4xl font-bold text-white'>
+                      <span className='text-4xl font-bold text-stone-900'>
                         {plan.price.toFixed(2).replace('.', ',')}€
                       </span>
-                      <span className='text-gray-400'>{plan.period}</span>
+                      <span className='text-stone-400'>{plan.period}</span>
                     </>
                   )}
                 </div>
@@ -316,7 +316,7 @@ function PricingContent() {
                 {plan.features.map((feature, index) => (
                   <li key={index} className='flex items-start gap-3'>
                     <svg
-                      className='w-5 h-5 text-green-400 flex-shrink-0 mt-0.5'
+                      className='w-5 h-5 text-[#16a34a] flex-shrink-0 mt-0.5'
                       fill='none'
                       viewBox='0 0 24 24'
                       stroke='currentColor'
@@ -328,13 +328,13 @@ function PricingContent() {
                         d='M5 13l4 4L19 7'
                       />
                     </svg>
-                    <span className='text-gray-300'>{feature}</span>
+                    <span className='text-stone-600'>{feature}</span>
                   </li>
                 ))}
                 {plan.limitations.map((limitation, index) => (
                   <li key={`lim-${index}`} className='flex items-start gap-3'>
                     <svg
-                      className='w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5'
+                      className='w-5 h-5 text-stone-300 flex-shrink-0 mt-0.5'
                       fill='none'
                       viewBox='0 0 24 24'
                       stroke='currentColor'
@@ -346,7 +346,7 @@ function PricingContent() {
                         d='M6 18L18 6M6 6l12 12'
                       />
                     </svg>
-                    <span className='text-gray-500'>{limitation}</span>
+                    <span className='text-stone-400'>{limitation}</span>
                   </li>
                 ))}
               </ul>
@@ -365,12 +365,12 @@ function PricingContent() {
         </div>
 
         {/* FAQ */}
-        <div className='mt-24'>
-          <h2 className='text-3xl font-bold text-white text-center mb-12'>
+        <div className='mt-24 md:mt-40'>
+          <h2 className='serif text-3xl md:text-[40px] md:leading-[48px] text-stone-900 text-center mb-12'>
             Preguntas frecuentes
           </h2>
 
-          <div className='grid md:grid-cols-2 gap-8 max-w-4xl mx-auto'>
+          <div className='grid md:grid-cols-2 gap-6 max-w-4xl mx-auto'>
             {[
               {
                 q: '¿Qué incluye el pago único de 9,99€?',
@@ -391,12 +391,12 @@ function PricingContent() {
             ].map((faq, index) => (
               <div
                 key={index}
-                className='bg-white/5 border border-white/10 rounded-xl p-6'
+                className='bg-white border border-stone-200 rounded-[10px] p-6 hover:shadow-[0_4px_12px_-2px_rgba(28,25,23,0.08)] hover:border-stone-300 transition-all duration-250'
               >
-                <h3 className='text-lg font-semibold text-white mb-2'>
+                <h3 className='text-lg font-medium text-stone-900 mb-2'>
                   {faq.q}
                 </h3>
-                <p className='text-gray-400'>{faq.a}</p>
+                <p className='text-stone-500 leading-relaxed'>{faq.a}</p>
               </div>
             ))}
           </div>
@@ -404,9 +404,9 @@ function PricingContent() {
       </main>
 
       {/* Footer */}
-      <footer className='border-t border-white/10 py-8 mt-24'>
-        <div className='max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4'>
-          <div className='flex items-center gap-2 text-gray-400'>
+      <footer className='border-t border-stone-200 py-10 mt-24'>
+        <div className='max-w-[1200px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4'>
+          <div className='flex items-center gap-2 text-stone-500'>
             <svg className='w-5 h-5' viewBox='0 0 24 24' fill='currentColor'>
               <path
                 d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
@@ -415,9 +415,10 @@ function PricingContent() {
                 fill='none'
               />
             </svg>
-            <span>FlipBook by VIBATO AI</span>
+            <span className='serif'>FlipBook</span>
+            <span className='text-stone-400 text-sm'>by VIBATO</span>
           </div>
-          <p className='text-gray-500 text-sm'>
+          <p className='text-stone-400 text-sm'>
             &copy; {new Date().getFullYear()} Todos los derechos reservados.
           </p>
         </div>
@@ -430,8 +431,8 @@ export default function PricingPage() {
   return (
     <Suspense
       fallback={
-        <div className='min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] flex items-center justify-center'>
-          <div className='w-8 h-8 border-2 border-white/20 border-t-[#e94560] rounded-full animate-spin' />
+        <div className='min-h-screen bg-[#FAFAF9] flex items-center justify-center'>
+          <div className='w-8 h-8 border-2 border-stone-200 border-t-[#166534] rounded-full animate-spin' />
         </div>
       }
     >

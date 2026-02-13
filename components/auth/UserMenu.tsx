@@ -61,12 +61,12 @@ export default function UserMenu({ user }: UserMenuProps) {
         aria-expanded={isOpen}
       >
         <UserAvatar name={user.user_metadata?.full_name} email={user.email} size='md' />
-        <span className='hidden md:block text-white font-medium truncate max-w-[150px]'>
+        <span className='hidden md:block text-stone-800 font-medium truncate max-w-[150px]'>
           {displayName}
         </span>
         {/* Chevron icon */}
         <svg
-          className={`hidden md:block w-4 h-4 text-white transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`hidden md:block w-4 h-4 text-stone-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill='none'
           viewBox='0 0 24 24'
           stroke='currentColor'
@@ -77,20 +77,20 @@ export default function UserMenu({ user }: UserMenuProps) {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className='absolute right-0 mt-2 w-64 bg-[#16213e] rounded-xl shadow-2xl border border-white/10 overflow-hidden z-50'>
+        <div className='absolute right-0 mt-2 w-64 bg-white rounded-[10px] shadow-[0_12px_24px_-4px_rgba(28,25,23,0.12)] border border-stone-200 overflow-hidden z-50'>
           {/* User Info Section */}
-          <div className='px-4 py-3 border-b border-white/10'>
-            <p className='text-sm font-medium text-white truncate'>
+          <div className='px-4 py-3 border-b border-stone-200'>
+            <p className='text-sm font-medium text-stone-900 truncate'>
               {user.user_metadata?.full_name || 'Usuario'}
             </p>
-            <p className='text-xs text-gray-400 truncate'>{user.email}</p>
+            <p className='text-xs text-stone-500 truncate'>{user.email}</p>
           </div>
 
           {/* Menu Items */}
           <div className='py-2'>
             <Link
               href='/profile'
-              className='flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors'
+              className='flex items-center gap-3 px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 transition-colors'
               onClick={() => setIsOpen(false)}
             >
               <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
@@ -106,7 +106,7 @@ export default function UserMenu({ user }: UserMenuProps) {
 
             <Link
               href='/pricing'
-              className='flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors'
+              className='flex items-center gap-3 px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 transition-colors'
               onClick={() => setIsOpen(false)}
             >
               <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
@@ -123,7 +123,7 @@ export default function UserMenu({ user }: UserMenuProps) {
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className='w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+              className='w-full flex items-center gap-3 px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
               {isLoggingOut ? (
                 <>

@@ -70,8 +70,8 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className='min-h-screen bg-linear-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]'>
-      <div className='max-w-5xl mx-auto px-4 py-12'>
+    <div className='min-h-screen bg-[#FAFAF9]'>
+      <div className='max-w-[1200px] mx-auto px-4 py-12'>
         {/* Profile Header */}
         <div className='flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-10'>
           <UserAvatar
@@ -80,13 +80,13 @@ export default async function ProfilePage() {
             size='lg'
           />
           <div className='flex-1'>
-            <h1 className='text-2xl font-bold text-white'>{displayName}</h1>
-            <p className='text-gray-400 mt-1'>{user.email}</p>
+            <h1 className='serif text-2xl text-stone-900'>{displayName}</h1>
+            <p className='text-stone-500 mt-1'>{user.email}</p>
             <div className='flex items-center gap-3 mt-2'>
-              <span className='inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full bg-[#e94560]/20 text-[#e94560] border border-[#e94560]/30'>
+              <span className='inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full bg-[#f0fdf4] text-[#166534] border border-[#dcfce7]'>
                 Plan {planLabels[subscription.plan] || subscription.plan}
               </span>
-              <span className='text-xs text-gray-500'>
+              <span className='text-xs text-stone-400'>
                 {flipbooks.length} / {subscription.max_flipbooks} flipbooks
               </span>
             </div>
@@ -112,12 +112,12 @@ export default async function ProfilePage() {
           {/* Right column: Flipbooks */}
           <div className='lg:col-span-2'>
             <div className='flex items-center justify-between mb-5'>
-              <h2 className='text-lg font-semibold text-white'>
+              <h2 className='text-lg font-medium text-stone-900'>
                 Mis Flipbooks
               </h2>
               <Link
                 href='/create'
-                className='inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-[#e94560] text-white font-medium rounded-lg hover:bg-[#d63d56] transition-colors'
+                className='inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-[#166534] text-white font-medium rounded-full hover:bg-[#14532d] transition-all hover:-translate-y-[1px]'
               >
                 <svg
                   className='w-4 h-4'

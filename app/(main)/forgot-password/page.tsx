@@ -13,18 +13,18 @@ export default function ForgotPasswordPage() {
   )
 
   return (
-    <div className='min-h-screen bg-linear-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] flex items-center justify-center p-4'>
+    <div className='min-h-screen bg-[#FAFAF9] flex items-center justify-center p-4'>
       {/* Background decoration */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-        <div className='absolute top-1/4 left-1/4 w-96 h-96 bg-[#e94560]/10 rounded-full blur-3xl' />
-        <div className='absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#0f3460]/30 rounded-full blur-3xl' />
+        <div className='absolute top-1/4 left-1/4 w-96 h-96 bg-[#f0fdf4] rounded-full blur-3xl' />
+        <div className='absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#dcfce7]/50 rounded-full blur-3xl' />
       </div>
 
       <div className='w-full max-w-md relative'>
         {/* Logo */}
         <Link
           href='/'
-          className='flex items-center justify-center gap-2 text-white mb-8'
+          className='flex items-center justify-center gap-2 text-stone-900 mb-8'
         >
           <svg className='w-10 h-10' viewBox='0 0 24 24' fill='currentColor'>
             <path
@@ -34,15 +34,15 @@ export default function ForgotPasswordPage() {
               fill='none'
             />
           </svg>
-          <span className='text-2xl font-bold'>FlipBook</span>
+          <span className='serif text-2xl font-bold'>FlipBook</span>
         </Link>
 
         {/* Card */}
-        <div className='bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl'>
+        <div className='bg-white border border-stone-200 rounded-[16px] p-8 shadow-[0_12px_24px_-4px_rgba(28,25,23,0.08)]'>
           <div className='text-center mb-8'>
-            <div className='w-16 h-16 mx-auto mb-4 rounded-full bg-[#e94560]/20 flex items-center justify-center'>
+            <div className='w-16 h-16 mx-auto mb-4 rounded-full bg-[#f0fdf4] border border-[#dcfce7] flex items-center justify-center'>
               <svg
-                className='w-8 h-8 text-[#e94560]'
+                className='w-8 h-8 text-[#166534]'
                 fill='none'
                 viewBox='0 0 24 24'
                 stroke='currentColor'
@@ -55,10 +55,10 @@ export default function ForgotPasswordPage() {
                 />
               </svg>
             </div>
-            <h1 className='text-2xl font-bold text-white mb-2'>
+            <h1 className='serif text-2xl text-stone-900 mb-2'>
               ¿Olvidaste tu contraseña?
             </h1>
-            <p className='text-gray-400 text-sm'>
+            <p className='text-stone-500 text-sm'>
               Ingresa tu email y te enviaremos un enlace para restablecer tu
               contraseña.
             </p>
@@ -66,8 +66,8 @@ export default function ForgotPasswordPage() {
 
           {/* Success message */}
           {state.success && (
-            <div className='mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg'>
-              <p className='text-green-400 text-sm flex items-center gap-2'>
+            <div className='mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-[10px]'>
+              <p className='text-emerald-800 text-sm flex items-center gap-2'>
                 <svg
                   className='w-5 h-5 shrink-0'
                   fill='none'
@@ -88,8 +88,8 @@ export default function ForgotPasswordPage() {
 
           {/* Error message */}
           {state.error && (
-            <div className='mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg'>
-              <p className='text-red-400 text-sm flex items-center gap-2'>
+            <div className='mb-6 p-4 bg-red-50 border border-red-200 rounded-[10px]'>
+              <p className='text-red-800 text-sm flex items-center gap-2'>
                 <svg
                   className='w-5 h-5 shrink-0'
                   fill='none'
@@ -136,7 +136,7 @@ export default function ForgotPasswordPage() {
           <div className='mt-6 text-center'>
             <Link
               href='/login'
-              className='text-sm text-gray-400 hover:text-[#e94560] transition-colors inline-flex items-center gap-2'
+              className='text-sm text-stone-500 hover:text-[#166534] transition-colors inline-flex items-center gap-2'
             >
               <svg
                 className='w-4 h-4'

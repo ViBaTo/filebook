@@ -205,12 +205,12 @@ export default function CreatePage() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]'>
+    <div className='min-h-screen bg-[#FAFAF9]'>
       {/* Main content */}
-      <main className='max-w-2xl mx-auto px-6 py-12'>
+      <main className='max-w-2xl mx-auto px-6 py-12 md:py-20'>
         {/* Step indicator */}
         <div className='flex items-center justify-center gap-2 mb-12'>
-          {['Upload', 'Process', 'Done'].map((label, index) => {
+          {['Subir', 'Procesar', 'Listo'].map((label, index) => {
             const stepIndex = {
               upload: 0,
               processing: 1,
@@ -225,9 +225,9 @@ export default function CreatePage() {
                 <div
                   className={`
                   w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors
-                  ${isComplete ? 'bg-[#e94560] text-white' : ''}
-                  ${isActive ? 'bg-white text-[#1a1a2e]' : ''}
-                  ${!isComplete && !isActive ? 'bg-white/10 text-white/50' : ''}
+                  ${isComplete ? 'bg-[#166534] text-white' : ''}
+                  ${isActive ? 'bg-stone-900 text-white' : ''}
+                  ${!isComplete && !isActive ? 'bg-stone-200 text-stone-400' : ''}
                 `}
                 >
                   {isComplete ? (
@@ -249,13 +249,13 @@ export default function CreatePage() {
                   )}
                 </div>
                 <span
-                  className={`text-sm ${isActive ? 'text-white' : 'text-white/50'}`}
+                  className={`text-sm ${isActive ? 'text-stone-900' : 'text-stone-400'}`}
                 >
                   {label}
                 </span>
                 {index < 2 && (
                   <div
-                    className={`w-12 h-0.5 mx-2 ${index < stepIndex ? 'bg-[#e94560]' : 'bg-white/20'}`}
+                    className={`w-12 h-0.5 mx-2 ${index < stepIndex ? 'bg-[#166534]' : 'bg-stone-200'}`}
                   />
                 )}
               </div>
@@ -267,11 +267,11 @@ export default function CreatePage() {
         {step === 'upload' && !needsCompression && (
           <div>
             <div className='text-center mb-8'>
-              <h1 className='text-3xl font-bold text-white mb-2'>
-                Create your FlipBook
+              <h1 className='serif text-3xl text-stone-900 mb-2'>
+                Crea tu FlipBook
               </h1>
-              <p className='text-gray-400'>
-                Upload a PDF and get a shareable interactive flipbook in seconds
+              <p className='text-stone-500'>
+                Sube un PDF y obtén un flipbook interactivo compartible en segundos
               </p>
             </div>
 
@@ -285,9 +285,9 @@ export default function CreatePage() {
               onFileSelected={handleFileSelected}
             />
 
-            <p className='text-center text-sm text-gray-500 mt-6'>
+            <p className='text-center text-sm text-stone-400 mt-6'>
               Gratis: Hasta 50MB, 3 flipbooks, 50 páginas.{' '}
-              <a href='/pricing' className='text-[#e94560] hover:underline'>
+              <a href='/pricing' className='text-[#166534] hover:underline'>
                 ¿Necesitas más? Ver planes
               </a>
             </p>
@@ -298,10 +298,10 @@ export default function CreatePage() {
         {(step === 'upload' && needsCompression) && pdfFile && (
           <div>
             <div className='text-center mb-8'>
-              <h1 className='text-3xl font-bold text-white mb-2'>
+              <h1 className='serif text-3xl text-stone-900 mb-2'>
                 Comprimir PDF
               </h1>
-              <p className='text-gray-400'>
+              <p className='text-stone-500'>
                 Tu archivo es grande. Elige un nivel de compresión para optimizarlo.
               </p>
             </div>
@@ -319,11 +319,11 @@ export default function CreatePage() {
         {step === 'processing' && (
           <div>
             <div className='text-center mb-8'>
-              <h1 className='text-3xl font-bold text-white mb-2'>
-                Processing your PDF
+              <h1 className='serif text-3xl text-stone-900 mb-2'>
+                Procesando tu PDF
               </h1>
-              <p className='text-gray-400'>
-                Converting pages to an interactive flipbook
+              <p className='text-stone-500'>
+                Convirtiendo páginas en un flipbook interactivo
               </p>
             </div>
 
@@ -338,9 +338,9 @@ export default function CreatePage() {
         {step === 'done' && bookResult && (
           <div>
             <div className='text-center mb-8'>
-              <div className='w-20 h-20 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center'>
+              <div className='w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center'>
                 <svg
-                  className='w-10 h-10 text-green-500'
+                  className='w-10 h-10 text-emerald-600'
                   fill='none'
                   viewBox='0 0 24 24'
                   stroke='currentColor'
@@ -353,49 +353,49 @@ export default function CreatePage() {
                   />
                 </svg>
               </div>
-              <h1 className='text-3xl font-bold text-white mb-2'>
-                Your FlipBook is ready!
+              <h1 className='serif text-3xl text-stone-900 mb-2'>
+                ¡Tu FlipBook está listo!
               </h1>
-              <p className='text-gray-400'>
-                {bookResult.pageCount} pages • {bookResult.title}
+              <p className='text-stone-500'>
+                {bookResult.pageCount} páginas • {bookResult.title}
               </p>
             </div>
 
             {/* Share link */}
-            <div className='bg-white/5 border border-white/10 rounded-xl p-6 mb-4'>
-              <label className='block text-sm font-medium text-gray-400 mb-2'>
-                Share link
+            <div className='bg-white border border-stone-200 rounded-[10px] p-6 mb-4'>
+              <label className='block text-sm font-medium text-stone-600 mb-2'>
+                Enlace para compartir
               </label>
               <div className='flex gap-2'>
                 <input
                   type='text'
                   value={viewUrl}
                   readOnly
-                  className='flex-1 px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm'
+                  className='flex-1 px-4 py-2.5 bg-[#FAFAF9] border border-stone-200 rounded-[6px] text-stone-900 text-sm'
                 />
                 <Button onClick={() => copyToClipboard(viewUrl)}>
-                  {copied ? 'Copied!' : 'Copy'}
+                  {copied ? '¡Copiado!' : 'Copiar'}
                 </Button>
               </div>
             </div>
 
             {/* Embed code */}
-            <div className='bg-white/5 border border-white/10 rounded-xl p-6 mb-6'>
-              <label className='block text-sm font-medium text-gray-400 mb-2'>
-                Embed code
+            <div className='bg-white border border-stone-200 rounded-[10px] p-6 mb-6'>
+              <label className='block text-sm font-medium text-stone-600 mb-2'>
+                Código embed
               </label>
               <textarea
                 value={embedCode}
                 readOnly
                 rows={3}
-                className='w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm font-mono resize-none'
+                className='w-full px-4 py-2.5 bg-[#FAFAF9] border border-stone-200 rounded-[6px] text-stone-900 text-sm font-mono resize-none'
               />
               <Button
                 onClick={() => copyToClipboard(embedCode)}
                 variant='secondary'
                 className='mt-2 w-full'
               >
-                Copy embed code
+                Copiar código embed
               </Button>
             </div>
 
@@ -406,13 +406,13 @@ export default function CreatePage() {
                 variant='secondary'
                 className='flex-1'
               >
-                Create another
+                Crear otro
               </Button>
               <Button
                 onClick={() => window.open(viewUrl, '_blank')}
                 className='flex-1'
               >
-                View FlipBook
+                Ver FlipBook
               </Button>
             </div>
           </div>
@@ -422,7 +422,7 @@ export default function CreatePage() {
         {step === 'error' && (
           <div>
             <div className='text-center mb-8'>
-              <div className='w-20 h-20 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center'>
+              <div className='w-20 h-20 mx-auto mb-4 rounded-full bg-red-50 border border-red-200 flex items-center justify-center'>
                 <svg
                   className='w-10 h-10 text-red-500'
                   fill='none'
@@ -437,14 +437,14 @@ export default function CreatePage() {
                   />
                 </svg>
               </div>
-              <h1 className='text-3xl font-bold text-white mb-2'>
-                Something went wrong
+              <h1 className='serif text-3xl text-stone-900 mb-2'>
+                Algo salió mal
               </h1>
-              <p className='text-gray-400'>{errorMessage}</p>
+              <p className='text-stone-500'>{errorMessage}</p>
             </div>
 
             <div className='flex justify-center'>
-              <Button onClick={handleRetry}>Try again</Button>
+              <Button onClick={handleRetry}>Intentar de nuevo</Button>
             </div>
           </div>
         )}
@@ -525,27 +525,6 @@ function PDFUploaderWithCapture({
         error: authError
       } = await supabase.auth.getUser()
 
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'create/page.tsx:uploadFile',
-            message: 'H1: auth state in PDFUploaderWithCapture',
-            data: {
-              hasUser: !!user,
-              userId: user?.id || null,
-              authError: authError?.message || null
-            },
-            hypothesisId: 'H1',
-            timestamp: Date.now()
-          })
-        }
-      ).catch(() => {})
-      // #endregion
-
       const { generateSlug } = await import('@/lib/utils/slug')
       const slug = generateSlug()
       const fileExt = file.name.split('.').pop()
@@ -559,26 +538,6 @@ function PDFUploaderWithCapture({
           cacheControl: '3600',
           upsert: false
         })
-
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'create/page.tsx:storage',
-            message: 'H5: storage upload result',
-            data: {
-              uploadSuccess: !uploadError,
-              uploadErrorMsg: uploadError?.message || null
-            },
-            hypothesisId: 'H5',
-            timestamp: Date.now()
-          })
-        }
-      ).catch(() => {})
-      // #endregion
 
       if (uploadError) {
         throw new Error(`Error uploading file: ${uploadError.message}`)
@@ -607,54 +566,11 @@ function PDFUploaderWithCapture({
           : null
       }
 
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'create/page.tsx:insert',
-            message: 'H2: insert data before fb_books insert',
-            data: {
-              user_id: insertData.user_id,
-              is_anonymous: insertData.is_anonymous,
-              slug: insertData.slug
-            },
-            hypothesisId: 'H2',
-            timestamp: Date.now()
-          })
-        }
-      ).catch(() => {})
-      // #endregion
-
       const { data: book, error: insertError } = await supabase
         .from('fb_books')
         .insert(insertData)
         .select()
         .single()
-
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'create/page.tsx:insertResult',
-            message: 'H2: insert result',
-            data: {
-              insertSuccess: !insertError,
-              insertErrorMsg: insertError?.message || null,
-              insertErrorCode: insertError?.code || null,
-              bookId: book?.id || null
-            },
-            hypothesisId: 'H2',
-            timestamp: Date.now()
-          })
-        }
-      ).catch(() => {})
-      // #endregion
 
       if (insertError) {
         throw new Error(`Error creating book: ${insertError.message}`)
@@ -721,12 +637,12 @@ function PDFUploaderWithCapture({
         <div
           {...getRootProps()}
           className={`
-            relative border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer
+            relative border-2 border-dashed rounded-[16px] p-12 text-center cursor-pointer
             transition-all duration-300 ease-out
             ${
               isDragActive
-                ? 'border-[#e94560] bg-[#e94560]/10 scale-[1.02]'
-                : 'border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10'
+                ? 'border-[#166534] bg-[#f0fdf4] scale-[1.02]'
+                : 'border-stone-300 hover:border-stone-400 bg-white hover:shadow-[0_4px_12px_-2px_rgba(28,25,23,0.08)]'
             }
             ${isUploading ? 'pointer-events-none opacity-50' : ''}
           `}
@@ -735,10 +651,10 @@ function PDFUploaderWithCapture({
 
           <div className='flex flex-col items-center gap-4'>
             <div
-              className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors ${isDragActive ? 'bg-[#e94560]/20' : 'bg-white/10'}`}
+              className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors ${isDragActive ? 'bg-[#dcfce7]' : 'bg-stone-100'}`}
             >
               <svg
-                className={`w-8 h-8 ${isDragActive ? 'text-[#e94560]' : 'text-gray-400'}`}
+                className={`w-8 h-8 ${isDragActive ? 'text-[#166534]' : 'text-stone-400'}`}
                 fill='none'
                 viewBox='0 0 24 24'
                 stroke='currentColor'
@@ -753,21 +669,21 @@ function PDFUploaderWithCapture({
             </div>
 
             <div>
-              <p className='text-lg font-medium text-white'>
-                {isDragActive ? 'Drop your PDF here' : 'Drag & drop your PDF'}
+              <p className='text-lg font-medium text-stone-900'>
+                {isDragActive ? 'Suelta tu PDF aquí' : 'Arrastra y suelta tu PDF'}
               </p>
-              <p className='text-sm text-gray-400 mt-1'>
-                or click to browse (max {maxSizeMB}MB)
+              <p className='text-sm text-stone-400 mt-1'>
+                o haz clic para seleccionar (máx. {maxSizeMB}MB)
               </p>
             </div>
           </div>
         </div>
       ) : (
-        <div className='border border-white/20 rounded-2xl p-6 bg-white/5'>
+        <div className='border border-stone-200 rounded-[16px] p-6 bg-white'>
           <div className='flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-lg bg-[#e94560]/20 flex items-center justify-center flex-shrink-0'>
+            <div className='w-12 h-12 rounded-[10px] bg-[#f0fdf4] border border-[#dcfce7] flex items-center justify-center flex-shrink-0'>
               <svg
-                className='w-6 h-6 text-[#e94560]'
+                className='w-6 h-6 text-[#166534]'
                 fill='none'
                 viewBox='0 0 24 24'
                 stroke='currentColor'
@@ -782,10 +698,10 @@ function PDFUploaderWithCapture({
             </div>
 
             <div className='flex-1 min-w-0'>
-              <p className='text-white font-medium truncate'>
+              <p className='text-stone-900 font-medium truncate'>
                 {selectedFile.name}
               </p>
-              <p className='text-sm text-gray-400'>
+              <p className='text-sm text-stone-400'>
                 {formatBytes(selectedFile.size)}
               </p>
             </div>
@@ -793,7 +709,7 @@ function PDFUploaderWithCapture({
             {!isUploading && (
               <button
                 onClick={handleReset}
-                className='p-2 text-gray-400 hover:text-white transition-colors'
+                className='p-2 text-stone-400 hover:text-stone-700 transition-colors'
               >
                 <svg
                   className='w-5 h-5'
@@ -814,14 +730,14 @@ function PDFUploaderWithCapture({
 
           {isUploading && (
             <div className='mt-4'>
-              <div className='h-2 bg-white/10 rounded-full overflow-hidden'>
+              <div className='h-2 bg-stone-100 rounded-full overflow-hidden'>
                 <div
-                  className='h-full bg-[#e94560] transition-all duration-300'
+                  className='h-full bg-[#166534] transition-all duration-300'
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
-              <p className='text-sm text-gray-400 mt-2 text-center'>
-                Uploading... {uploadProgress}%
+              <p className='text-sm text-stone-400 mt-2 text-center'>
+                Subiendo... {uploadProgress}%
               </p>
             </div>
           )}
@@ -831,7 +747,7 @@ function PDFUploaderWithCapture({
               <div>
                 <label
                   htmlFor='book-title'
-                  className='block text-sm font-medium text-gray-400 mb-1.5'
+                  className='block text-sm font-medium text-stone-600 mb-1.5'
                 >
                   Título del FlipBook
                 </label>
@@ -841,15 +757,15 @@ function PDFUploaderWithCapture({
                   value={bookTitle}
                   onChange={(e) => setBookTitle(e.target.value)}
                   placeholder='Ej: Catálogo de productos 2026'
-                  className='w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-lg text-white text-sm placeholder:text-gray-500 focus:outline-none focus:border-[#e94560] focus:ring-1 focus:ring-[#e94560] transition-colors'
+                  className='w-full px-4 py-2.5 bg-white border-[1.5px] border-stone-300 rounded-[6px] text-stone-900 text-sm placeholder:text-stone-400 focus:outline-none focus:border-[#166534] focus:shadow-[0_0_0_3px_#f0fdf4] transition-[border-color] duration-150'
                 />
               </div>
               <div className='flex gap-3'>
                 <Button onClick={handleReset} variant='ghost' className='flex-1'>
-                  Cancel
+                  Cancelar
                 </Button>
                 <Button onClick={handleUpload} className='flex-1'>
-                  Create FlipBook
+                  Crear FlipBook
                 </Button>
               </div>
             </div>

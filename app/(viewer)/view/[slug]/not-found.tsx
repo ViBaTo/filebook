@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function NotFound() {
   return (
-    <div className='min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] flex items-center justify-center'>
+    <div className='min-h-screen bg-gradient-to-br from-[#1C1917] via-[#292524] to-[#1C1917] flex items-center justify-center'>
       <div className='text-center'>
         <div className='w-24 h-24 mx-auto mb-6 rounded-full bg-white/10 flex items-center justify-center'>
           <svg
@@ -21,15 +21,15 @@ export default function NotFound() {
         </div>
 
         <h1 className='text-3xl font-bold text-white mb-2'>
-          FlipBook not found
+          FlipBook no encontrado
         </h1>
         <p className='text-gray-400 mb-8'>
-          This flipbook may have been deleted or the link is incorrect.
+          Este flipbook puede haber sido eliminado o el enlace no es correcto.
         </p>
 
         <Link
           href='/'
-          className='inline-flex items-center gap-2 px-6 py-3 bg-[#e94560] text-white rounded-lg hover:bg-[#d63d56] transition-colors'
+          className='inline-flex items-center gap-2 px-6 py-3 bg-[#166534] text-white rounded-full hover:bg-[#14532d] transition-all hover:-translate-y-[1px]'
         >
           <svg
             className='w-5 h-5'
@@ -44,7 +44,7 @@ export default function NotFound() {
               d='M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'
             />
           </svg>
-          Go home
+          Ir al inicio
         </Link>
       </div>
     </div>

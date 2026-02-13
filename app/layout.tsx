@@ -1,20 +1,31 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Instrument_Serif } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({
-  variable: '--font-inter',
-  subsets: ['latin']
+const instrumentSerif = Instrument_Serif({
+  variable: '--font-instrument-serif',
+  subsets: ['latin'],
+  weight: '400',
+  style: ['normal', 'italic'],
+  display: 'swap'
 })
 
 export const metadata: Metadata = {
-  title: 'FlipBook - Create Interactive PDF FlipBooks',
+  title: 'FlipBook by VIBATO — Tus documentos, convertidos en experiencias',
   description:
-    'Convert your PDF into an interactive 3D flipbook in seconds. Share anywhere with a simple link.',
-  keywords: ['flipbook', 'pdf', 'interactive', 'digital publishing', 'embed'],
+    'Convierte tus PDFs en flipbooks interactivos con efecto de pasar páginas. Perfecto para catálogos, portfolios, revistas y presentaciones.',
+  keywords: [
+    'flipbook',
+    'pdf',
+    'catálogo interactivo',
+    'portfolio digital',
+    'publicación digital',
+    'embed'
+  ],
   openGraph: {
-    title: 'FlipBook - Create Interactive PDF FlipBooks',
-    description: 'Convert your PDF into an interactive 3D flipbook in seconds.',
+    title: 'FlipBook by VIBATO — Tus documentos, convertidos en experiencias',
+    description:
+      'Convierte tus PDFs en flipbooks interactivos con efecto de pasar páginas.',
     type: 'website'
   }
 }
@@ -25,8 +36,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang='en'>
-      <body className={`${inter.variable} antialiased`}>{children}</body>
+    <html lang='es'>
+      <body className={`${instrumentSerif.variable} antialiased`}>
+        {children}
+      </body>
     </html>
   )
 }

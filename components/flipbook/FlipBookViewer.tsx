@@ -315,7 +315,7 @@ export function FlipBookViewer({
           )}
           {ownerName && (
             <div className='flex items-center justify-center gap-1.5'>
-              <div className='w-4 h-4 rounded-full bg-gradient-to-br from-[#e94560] to-[#d63d56] flex items-center justify-center text-white text-[9px] font-semibold shrink-0'>
+              <div className='w-4 h-4 rounded-full bg-gradient-to-br from-[#166534] to-[#14532d] flex items-center justify-center text-white text-[9px] font-semibold shrink-0'>
                 {ownerName.charAt(0).toUpperCase()}
               </div>
               <span className='text-xs text-gray-400'>
@@ -380,7 +380,7 @@ export function FlipBookViewer({
                             />
                           ) : (
                             <div className='w-full h-full flex items-center justify-center bg-gray-100'>
-                              <div className='w-8 h-8 border-2 border-gray-300 border-t-[#e94560] rounded-full animate-spin' />
+                              <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
                             </div>
                           )}
                         </div>
@@ -405,7 +405,7 @@ export function FlipBookViewer({
                           />
                         ) : hasLeftPage ? (
                           <div className='w-full h-full flex items-center justify-center bg-gray-100'>
-                            <div className='w-8 h-8 border-2 border-gray-300 border-t-[#e94560] rounded-full animate-spin' />
+                            <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
                           </div>
                         ) : (
                           <div className='w-full h-full bg-transparent' />
@@ -453,7 +453,7 @@ export function FlipBookViewer({
                           />
                         ) : (
                           <div className='w-full h-full flex items-center justify-center bg-gray-100'>
-                            <div className='w-8 h-8 border-2 border-gray-300 border-t-[#e94560] rounded-full animate-spin' />
+                            <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
                           </div>
                         )}
                       </div>
@@ -473,7 +473,7 @@ export function FlipBookViewer({
                         />
                       ) : hasRightPage ? (
                         <div className='w-full h-full flex items-center justify-center bg-gray-100'>
-                          <div className='w-8 h-8 border-2 border-gray-300 border-t-[#e94560] rounded-full animate-spin' />
+                          <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
                         </div>
                       ) : (
                         <div className='w-full h-full bg-transparent' />

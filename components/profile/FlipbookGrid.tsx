@@ -14,19 +14,19 @@ function StatusBadge({ status }: { status: FlipBook['status'] }) {
   const config = {
     ready: {
       label: 'Publicado',
-      classes: 'bg-green-500/20 text-green-400 border-green-500/30'
+      classes: 'bg-emerald-50 text-emerald-700 border-emerald-200'
     },
     processing: {
       label: 'Procesando',
-      classes: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+      classes: 'bg-amber-50 text-amber-700 border-amber-200'
     },
     uploading: {
       label: 'Subiendo',
-      classes: 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+      classes: 'bg-blue-50 text-blue-700 border-blue-200'
     },
     error: {
       label: 'Error',
-      classes: 'bg-red-500/20 text-red-400 border-red-500/30'
+      classes: 'bg-red-50 text-red-700 border-red-200'
     }
   }
 
@@ -70,15 +70,15 @@ function DeleteConfirmModal({
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       {/* Backdrop */}
       <div
-        className='absolute inset-0 bg-black/60 backdrop-blur-sm'
+        className='absolute inset-0 bg-black/40 backdrop-blur-sm'
         onClick={onCancel}
       />
       {/* Modal */}
-      <div className='relative bg-[#16213e] border border-white/10 rounded-xl shadow-2xl max-w-sm w-full p-6'>
+      <div className='relative bg-white border border-stone-200 rounded-[16px] shadow-[0_24px_48px_-12px_rgba(28,25,23,0.16)] max-w-sm w-full p-6'>
         <div className='flex items-center gap-3 mb-4'>
-          <div className='w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center shrink-0'>
+          <div className='w-10 h-10 rounded-full bg-red-50 border border-red-200 flex items-center justify-center shrink-0'>
             <svg
-              className='w-5 h-5 text-red-400'
+              className='w-5 h-5 text-red-500'
               fill='none'
               viewBox='0 0 24 24'
               stroke='currentColor'
@@ -92,29 +92,29 @@ function DeleteConfirmModal({
             </svg>
           </div>
           <div>
-            <h3 className='text-white font-semibold'>Eliminar flipbook</h3>
-            <p className='text-sm text-gray-400 mt-0.5'>
+            <h3 className='text-stone-900 font-semibold'>Eliminar flipbook</h3>
+            <p className='text-sm text-stone-500 mt-0.5'>
               Esta acción no se puede deshacer
             </p>
           </div>
         </div>
-        <p className='text-sm text-gray-300 mb-6'>
+        <p className='text-sm text-stone-600 mb-6'>
           ¿Estás seguro de que quieres eliminar{' '}
-          <span className='font-medium text-white'>&quot;{bookTitle}&quot;</span>?
+          <span className='font-medium text-stone-900'>&quot;{bookTitle}&quot;</span>?
           Se perderán todos los datos y analíticas asociadas.
         </p>
         <div className='flex gap-3 justify-end'>
           <button
             onClick={onCancel}
             disabled={isDeleting}
-            className='px-4 py-2 text-sm font-medium text-gray-300 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50'
+            className='px-4 py-2 text-sm font-medium text-stone-700 bg-white border-[1.5px] border-stone-300 rounded-full hover:bg-stone-50 transition-colors disabled:opacity-50'
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
             disabled={isDeleting}
-            className='px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2'
+            className='px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-full hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2'
           >
             {isDeleting ? (
               <>
@@ -178,9 +178,9 @@ export default function FlipbookGrid({ flipbooks }: FlipbookGridProps) {
 
   if (flipbooks.length === 0) {
     return (
-      <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-12 text-center'>
+      <div className='bg-white border border-stone-200 rounded-[10px] p-12 text-center'>
         <svg
-          className='w-16 h-16 mx-auto text-gray-600 mb-4'
+          className='w-16 h-16 mx-auto text-stone-300 mb-4'
           fill='none'
           viewBox='0 0 24 24'
           stroke='currentColor'
@@ -192,15 +192,15 @@ export default function FlipbookGrid({ flipbooks }: FlipbookGridProps) {
             d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
           />
         </svg>
-        <h3 className='text-lg font-medium text-white mb-2'>
+        <h3 className='text-lg font-medium text-stone-900 mb-2'>
           No tienes flipbooks aún
         </h3>
-        <p className='text-gray-400 mb-6'>
+        <p className='text-stone-500 mb-6'>
           Crea tu primer flipbook subiendo un archivo PDF
         </p>
         <Link
           href='/create'
-          className='inline-flex items-center gap-2 px-6 py-3 bg-[#e94560] text-white font-medium rounded-lg hover:bg-[#d63d56] transition-colors'
+          className='inline-flex items-center gap-2 px-6 py-3 bg-[#166534] text-white font-medium rounded-full hover:bg-[#14532d] transition-all hover:-translate-y-[1px]'
         >
           <svg
             className='w-5 h-5'
@@ -225,8 +225,8 @@ export default function FlipbookGrid({ flipbooks }: FlipbookGridProps) {
     <>
       {/* Error toast */}
       {error && (
-        <div className='mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center justify-between'>
-          <p className='text-red-400 text-sm flex items-center gap-2'>
+        <div className='mb-4 p-4 bg-red-50 border border-red-200 rounded-[10px] flex items-center justify-between'>
+          <p className='text-red-800 text-sm flex items-center gap-2'>
             <svg
               className='w-5 h-5 shrink-0'
               fill='none'
@@ -244,7 +244,7 @@ export default function FlipbookGrid({ flipbooks }: FlipbookGridProps) {
           </p>
           <button
             onClick={() => setError(null)}
-            className='text-red-400 hover:text-red-300 ml-3'
+            className='text-red-500 hover:text-red-700 ml-3'
           >
             <svg className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
@@ -263,7 +263,7 @@ export default function FlipbookGrid({ flipbooks }: FlipbookGridProps) {
           return (
             <div
               key={book.id}
-              className='group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden hover:border-white/20 hover:bg-white/[0.07] transition-all duration-200'
+              className='group relative bg-white border border-stone-200 rounded-[10px] overflow-hidden hover:shadow-[0_4px_12px_-2px_rgba(28,25,23,0.08)] hover:border-stone-300 hover:-translate-y-[2px] transition-all duration-200'
             >
               {/* Delete button */}
               <button
@@ -272,7 +272,7 @@ export default function FlipbookGrid({ flipbooks }: FlipbookGridProps) {
                   e.stopPropagation()
                   setConfirmDelete(book)
                 }}
-                className='absolute top-2 left-2 z-10 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-500/20 hover:border-red-500/30 opacity-0 group-hover:opacity-100 transition-all duration-200'
+                className='absolute top-2 left-2 z-10 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm border border-stone-200 flex items-center justify-center text-stone-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 opacity-0 group-hover:opacity-100 transition-all duration-200'
                 title='Eliminar flipbook'
               >
                 <svg
@@ -292,19 +292,19 @@ export default function FlipbookGrid({ flipbooks }: FlipbookGridProps) {
 
               <Link href={`/view/${book.slug}`}>
                 {/* Thumbnail */}
-                <div className='aspect-4/3 relative bg-white/5 overflow-hidden'>
+                <div className='aspect-4/3 relative bg-stone-50 overflow-hidden'>
                   {thumbnailUrl ? (
                     <Image
                       src={thumbnailUrl}
                       alt={book.title}
                       fill
-                      className='object-cover group-hover:scale-105 transition-transform duration-300'
+                      className='object-cover group-hover:scale-[1.02] transition-transform duration-300'
                       sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
                     />
                   ) : (
                     <div className='w-full h-full flex items-center justify-center'>
                       <svg
-                        className='w-12 h-12 text-gray-600'
+                        className='w-12 h-12 text-stone-300'
                         fill='none'
                         viewBox='0 0 24 24'
                         stroke='currentColor'
@@ -326,10 +326,10 @@ export default function FlipbookGrid({ flipbooks }: FlipbookGridProps) {
 
                 {/* Info */}
                 <div className='p-4'>
-                  <h3 className='font-medium text-white truncate group-hover:text-[#e94560] transition-colors'>
+                  <h3 className='font-medium text-stone-900 truncate group-hover:text-[#166534] transition-colors'>
                     {book.title}
                   </h3>
-                  <div className='flex items-center gap-3 mt-2 text-xs text-gray-400'>
+                  <div className='flex items-center gap-3 mt-2 text-xs text-stone-400'>
                     {book.page_count > 0 && (
                       <span className='flex items-center gap-1'>
                         <svg

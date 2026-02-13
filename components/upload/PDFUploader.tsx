@@ -38,49 +38,10 @@ export function PDFUploader({
         error: authError
       } = await supabase.auth.getUser()
 
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'PDFUploader.tsx:37',
-            message: 'H1: auth.getUser result',
-            data: {
-              hasUser: !!user,
-              userId: user?.id || null,
-              userEmail: user?.email || null,
-              authError: authError?.message || null
-            },
-            hypothesisId: 'H1',
-            timestamp: Date.now()
-          })
-        }
-      ).catch(() => {})
-      // #endregion
-
       const slug = generateSlug()
       const fileExt = file.name.split('.').pop()
       const fileName = `${slug}.${fileExt}`
       const filePath = user ? `${user.id}/${fileName}` : `anonymous/${fileName}`
-
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'PDFUploader.tsx:48',
-            message: 'H2: filePath computed',
-            data: { filePath, hasUser: !!user },
-            hypothesisId: 'H2',
-            timestamp: Date.now()
-          })
-        }
-      ).catch(() => {})
-      // #endregion
 
       // Upload PDF to storage
       setUploadProgress(20)
@@ -91,102 +52,39 @@ export function PDFUploader({
           upsert: false
         })
 
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'PDFUploader.tsx:60',
-            message: 'H5: storage upload result',
-            data: {
-              uploadSuccess: !uploadError,
-              uploadErrorMsg: uploadError?.message || null
-            },
-            hypothesisId: 'H5',
-            timestamp: Date.now()
-          })
-        }
-      ).catch(() => {})
-      // #endregion
-
       if (uploadError) {
         throw new Error(`Error uploading file: ${uploadError.message}`)
       }
 
       setUploadProgress(60)
 
-      // Get the public URL (even though bucket is private, we use signed URLs later)
+      // Get the public URL
       const { data: urlData } = supabase.storage
         .from('flipbook-pdfs')
         .getPublicUrl(filePath)
 
       const pdfUrl = urlData.publicUrl
 
-      // Create book record - explicitly set user_id for RLS compliance
+      // Create book record
       const isAnonymous = !user
       const insertData = {
         slug,
         pdf_url: pdfUrl,
         pdf_filename: file.name,
         pdf_size_bytes: file.size,
-        user_id: user?.id || null, // Explicitly set user_id for RLS
+        user_id: user?.id || null,
         is_anonymous: isAnonymous,
         status: 'uploading',
         expires_at: isAnonymous
-          ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days for anonymous
+          ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
           : null
       }
-
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'PDFUploader.tsx:88',
-            message: 'H2: insert data before insert',
-            data: {
-              user_id: insertData.user_id,
-              is_anonymous: insertData.is_anonymous,
-              slug: insertData.slug
-            },
-            hypothesisId: 'H2',
-            timestamp: Date.now()
-          })
-        }
-      ).catch(() => {})
-      // #endregion
 
       const { data: book, error: insertError } = await supabase
         .from('fb_books')
         .insert(insertData)
         .select()
         .single()
-
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7243/ingest/794432fe-9e2f-465e-959b-553b78daa77c',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'PDFUploader.tsx:98',
-            message: 'H2: insert result',
-            data: {
-              insertSuccess: !insertError,
-              insertErrorMsg: insertError?.message || null,
-              insertErrorCode: insertError?.code || null,
-              bookId: book?.id || null
-            },
-            hypothesisId: 'H2',
-            timestamp: Date.now()
-          })
-        }
-      ).catch(() => {})
-      // #endregion
 
       if (insertError) {
         throw new Error(`Error creating book: ${insertError.message}`)
@@ -251,12 +149,12 @@ export function PDFUploader({
         <div
           {...getRootProps()}
           className={`
-            relative border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer
+            relative border-2 border-dashed rounded-[16px] p-12 text-center cursor-pointer
             transition-all duration-300 ease-out
             ${
               isDragActive
-                ? 'border-[#e94560] bg-[#e94560]/10 scale-[1.02]'
-                : 'border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10'
+                ? 'border-[#166534] bg-[#f0fdf4] scale-[1.02]'
+                : 'border-stone-300 hover:border-stone-400 bg-white hover:shadow-[0_4px_12px_-2px_rgba(28,25,23,0.08)]'
             }
             ${isUploading ? 'pointer-events-none opacity-50' : ''}
           `}
@@ -265,10 +163,10 @@ export function PDFUploader({
 
           <div className='flex flex-col items-center gap-4'>
             <div
-              className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors ${isDragActive ? 'bg-[#e94560]/20' : 'bg-white/10'}`}
+              className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors ${isDragActive ? 'bg-[#dcfce7]' : 'bg-stone-100'}`}
             >
               <svg
-                className={`w-8 h-8 ${isDragActive ? 'text-[#e94560]' : 'text-gray-400'}`}
+                className={`w-8 h-8 ${isDragActive ? 'text-[#166534]' : 'text-stone-400'}`}
                 fill='none'
                 viewBox='0 0 24 24'
                 stroke='currentColor'
@@ -283,21 +181,21 @@ export function PDFUploader({
             </div>
 
             <div>
-              <p className='text-lg font-medium text-white'>
-                {isDragActive ? 'Drop your PDF here' : 'Drag & drop your PDF'}
+              <p className='text-lg font-medium text-stone-900'>
+                {isDragActive ? 'Suelta tu PDF aquí' : 'Arrastra y suelta tu PDF'}
               </p>
-              <p className='text-sm text-gray-400 mt-1'>
-                or click to browse (max {maxSizeMB}MB)
+              <p className='text-sm text-stone-400 mt-1'>
+                o haz clic para seleccionar (máx. {maxSizeMB}MB)
               </p>
             </div>
           </div>
         </div>
       ) : (
-        <div className='border border-white/20 rounded-2xl p-6 bg-white/5'>
+        <div className='border border-stone-200 rounded-[16px] p-6 bg-white'>
           <div className='flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-lg bg-[#e94560]/20 flex items-center justify-center flex-shrink-0'>
+            <div className='w-12 h-12 rounded-[10px] bg-[#f0fdf4] border border-[#dcfce7] flex items-center justify-center flex-shrink-0'>
               <svg
-                className='w-6 h-6 text-[#e94560]'
+                className='w-6 h-6 text-[#166534]'
                 fill='none'
                 viewBox='0 0 24 24'
                 stroke='currentColor'
@@ -312,10 +210,10 @@ export function PDFUploader({
             </div>
 
             <div className='flex-1 min-w-0'>
-              <p className='text-white font-medium truncate'>
+              <p className='text-stone-900 font-medium truncate'>
                 {selectedFile.name}
               </p>
-              <p className='text-sm text-gray-400'>
+              <p className='text-sm text-stone-400'>
                 {formatBytes(selectedFile.size)}
               </p>
             </div>
@@ -323,7 +221,7 @@ export function PDFUploader({
             {!isUploading && (
               <button
                 onClick={handleReset}
-                className='p-2 text-gray-400 hover:text-white transition-colors'
+                className='p-2 text-stone-400 hover:text-stone-700 transition-colors'
               >
                 <svg
                   className='w-5 h-5'
@@ -344,14 +242,14 @@ export function PDFUploader({
 
           {isUploading && (
             <div className='mt-4'>
-              <div className='h-2 bg-white/10 rounded-full overflow-hidden'>
+              <div className='h-2 bg-stone-100 rounded-full overflow-hidden'>
                 <div
-                  className='h-full bg-[#e94560] transition-all duration-300'
+                  className='h-full bg-[#166534] transition-all duration-300'
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
-              <p className='text-sm text-gray-400 mt-2 text-center'>
-                Uploading... {uploadProgress}%
+              <p className='text-sm text-stone-400 mt-2 text-center'>
+                Subiendo... {uploadProgress}%
               </p>
             </div>
           )}
@@ -359,10 +257,10 @@ export function PDFUploader({
           {!isUploading && (
             <div className='mt-4 flex gap-3'>
               <Button onClick={handleReset} variant='ghost' className='flex-1'>
-                Cancel
+                Cancelar
               </Button>
               <Button onClick={handleUpload} className='flex-1'>
-                Upload PDF
+                Subir PDF
               </Button>
             </div>
           )}

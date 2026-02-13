@@ -17,8 +17,8 @@ interface ProfileFormProps {
 
 function SuccessMessage({ message }: { message: string }) {
   return (
-    <div className='p-4 bg-green-500/10 border border-green-500/30 rounded-lg'>
-      <p className='text-green-400 text-sm flex items-center gap-2'>
+    <div className='p-4 bg-emerald-50 border border-emerald-200 rounded-[10px]'>
+      <p className='text-emerald-800 text-sm flex items-center gap-2'>
         <svg
           className='w-5 h-5 shrink-0'
           fill='none'
@@ -40,8 +40,8 @@ function SuccessMessage({ message }: { message: string }) {
 
 function ErrorMessage({ message }: { message: string }) {
   return (
-    <div className='p-4 bg-red-500/10 border border-red-500/30 rounded-lg'>
-      <p className='text-red-400 text-sm flex items-center gap-2'>
+    <div className='p-4 bg-red-50 border border-red-200 rounded-[10px]'>
+      <p className='text-red-800 text-sm flex items-center gap-2'>
         <svg
           className='w-5 h-5 shrink-0'
           fill='none'
@@ -75,12 +75,12 @@ export default function ProfileForm({ profile, email }: ProfileFormProps) {
   return (
     <div className='space-y-8'>
       {/* Profile Info Form */}
-      <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl'>
-        <div className='px-6 py-4 border-b border-white/10'>
-          <h2 className='text-lg font-semibold text-white'>
+      <div className='bg-white border border-stone-200 rounded-[10px]'>
+        <div className='px-6 py-4 border-b border-stone-200'>
+          <h2 className='text-lg font-medium text-stone-900'>
             Información personal
           </h2>
-          <p className='text-sm text-gray-400 mt-1'>
+          <p className='text-sm text-stone-500 mt-1'>
             Actualiza tu información de perfil
           </p>
         </div>
@@ -89,7 +89,7 @@ export default function ProfileForm({ profile, email }: ProfileFormProps) {
           <div className='w-full'>
             <label
               htmlFor='email'
-              className='block text-sm font-medium text-gray-300 mb-1'
+              className='block text-sm font-medium text-stone-700 mb-1'
             >
               Email
             </label>
@@ -98,9 +98,9 @@ export default function ProfileForm({ profile, email }: ProfileFormProps) {
               type='email'
               value={email}
               disabled
-              className='w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-gray-500 cursor-not-allowed'
+              className='w-full px-4 py-3 bg-stone-50 border-[1.5px] border-stone-200 rounded-[6px] text-stone-400 cursor-not-allowed'
             />
-            <p className='mt-1 text-xs text-gray-500'>
+            <p className='mt-1 text-xs text-stone-400'>
               El email no se puede cambiar
             </p>
           </div>
@@ -163,12 +163,12 @@ export default function ProfileForm({ profile, email }: ProfileFormProps) {
       </div>
 
       {/* Change Password Form */}
-      <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl'>
-        <div className='px-6 py-4 border-b border-white/10'>
-          <h2 className='text-lg font-semibold text-white'>
+      <div className='bg-white border border-stone-200 rounded-[10px]'>
+        <div className='px-6 py-4 border-b border-stone-200'>
+          <h2 className='text-lg font-medium text-stone-900'>
             Cambiar contraseña
           </h2>
-          <p className='text-sm text-gray-400 mt-1'>
+          <p className='text-sm text-stone-500 mt-1'>
             Actualiza tu contraseña de acceso
           </p>
         </div>

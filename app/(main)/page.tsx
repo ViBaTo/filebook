@@ -1,122 +1,187 @@
+'use client'
+
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+
+const easeOut: [number, number, number, number] = [0, 0, 0.2, 1]
+
+const fadeUp = {
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, ease: easeOut },
+  viewport: { once: true, margin: '-100px' }
+}
+
+const staggerContainer = {
+  whileInView: { transition: { staggerChildren: 0.12 } }
+}
+
+const staggerItem = {
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, ease: easeOut }
+}
 
 export default function Home() {
   return (
-    <div className='min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]'>
+    <div className='min-h-screen bg-[#FAFAF9]'>
       {/* Hero */}
-      <main className='max-w-5xl mx-auto px-6 pt-20 pb-32'>
-        <div className='text-center mb-16'>
-          <div className='inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-sm text-gray-300 mb-6'>
-            <span className='w-2 h-2 bg-green-400 rounded-full animate-pulse'></span>
-            Gratis hasta 30MB, sin registro
-          </div>
+      <main className='max-w-[1200px] mx-auto px-6'>
+        <section className='pt-24 md:pt-40 pb-24 md:pb-40 text-center'>
+          <motion.div {...fadeUp}>
+            <div className='inline-flex items-center gap-2 px-4 py-2 bg-[#f0fdf4] rounded-full text-sm text-[#166534] mb-8 border border-[#dcfce7]'>
+              <span className='w-2 h-2 bg-[#16a34a] rounded-full animate-pulse'></span>
+              Gratis hasta 50MB, sin registro
+            </div>
+          </motion.div>
 
-          <h1 className='text-5xl md:text-6xl font-bold text-white mb-6 leading-tight'>
-            Convierte tu PDF en un
-            <span className='text-[#e94560]'> flipbook interactivo</span>
-          </h1>
+          <motion.h1
+            className='serif text-5xl md:text-7xl text-stone-900 mb-6 leading-tight'
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: easeOut, delay: 0.1 }}
+          >
+            Tus documentos, convertidos
+            <br />
+            en <span className='italic text-[#166534]'>experiencias</span>
+          </motion.h1>
 
-          <p className='text-xl text-gray-400 max-w-2xl mx-auto mb-10'>
-            Sube un PDF y obtén un link compartible a un flipbook interactivo
-            3D. Perfecto para catálogos, presentaciones, revistas y más.
-          </p>
+          <motion.p
+            className='text-lg md:text-xl text-stone-500 max-w-2xl mx-auto mb-12'
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: easeOut, delay: 0.2 }}
+          >
+            Da vida a tus catálogos, portfolios y revistas con flipbooks interactivos
+            que tus clientes recordarán. Sube un PDF y comparte con un link.
+          </motion.p>
 
-          <div className='flex flex-col sm:flex-row items-center justify-center gap-4'>
+          <motion.div
+            className='flex flex-col sm:flex-row items-center justify-center gap-4'
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: easeOut, delay: 0.3 }}
+          >
             <Link
               href='/create'
-              className='px-8 py-4 bg-[#e94560] text-white rounded-xl hover:bg-[#d63d56] transition-all hover:scale-105 font-semibold text-lg shadow-lg shadow-[#e94560]/25'
+              className='px-8 py-4 bg-[#166534] text-white rounded-full hover:bg-[#14532d] transition-all hover:-translate-y-[1px] hover:shadow-[0_4px_12px_-2px_rgba(28,25,23,0.08)] font-medium text-lg'
             >
-              Crear tu FlipBook
+              Prueba gratis
             </Link>
             <Link
-              href='/pricing'
-              className='px-8 py-4 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors font-medium'
+              href='#how-it-works'
+              className='px-8 py-4 text-[#166534] rounded-full hover:bg-[#f0fdf4] transition-colors font-medium'
             >
-              Ver precios
+              Ver cómo funciona
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </section>
 
         {/* Demo Preview */}
-        <div className='relative mx-auto max-w-3xl'>
-          <div className='absolute inset-0 bg-[#e94560]/20 blur-3xl rounded-full'></div>
-          <div className='relative bg-gradient-to-br from-[#1a1a2e] to-[#0f3460] rounded-2xl border border-white/10 p-8 shadow-2xl'>
-            <div className='aspect-[16/10] bg-white/5 rounded-lg flex items-center justify-center'>
-              <div className='text-center'>
-                <div className='w-24 h-32 mx-auto mb-4 bg-white/10 rounded-lg flex items-center justify-center relative overflow-hidden'>
-                  {/* Animated book icon */}
-                  <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse'></div>
-                  <svg
-                    className='w-12 h-12 text-white/50'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={1.5}
-                      d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
-                    />
-                  </svg>
+        <motion.section
+          className='pb-24 md:pb-40'
+          initial={{ opacity: 0, scale: 0.96 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, ease: easeOut }}
+          viewport={{ once: true, margin: '-100px' }}
+        >
+          <div className='relative mx-auto max-w-3xl'>
+            <div className='relative bg-white rounded-[16px] border border-stone-200 p-8 shadow-[0_24px_48px_-12px_rgba(28,25,23,0.10)]'>
+              <div className='aspect-[16/10] bg-[#FAFAF9] rounded-[10px] flex items-center justify-center border border-stone-100'>
+                <div className='text-center'>
+                  <div className='w-24 h-32 mx-auto mb-4 bg-white rounded-[10px] border border-stone-200 flex items-center justify-center relative overflow-hidden shadow-[0_1px_3px_0_rgba(28,25,23,0.06)]'>
+                    {/* Animated book icon */}
+                    <div className='absolute inset-0 bg-gradient-to-r from-transparent via-[#f0fdf4] to-transparent animate-pulse'></div>
+                    <svg
+                      className='w-12 h-12 text-stone-300'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={1.5}
+                        d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
+                      />
+                    </svg>
+                  </div>
+                  <p className='text-stone-400 text-sm'>
+                    Tu flipbook aparecerá aquí
+                  </p>
                 </div>
-                <p className='text-gray-500 text-sm'>
-                  Your flipbook preview will appear here
-                </p>
               </div>
             </div>
           </div>
-        </div>
+        </motion.section>
 
         {/* How it works */}
-        <section id='how-it-works' className='mt-32'>
-          <h2 className='text-3xl font-bold text-white text-center mb-12'>
-            How it works
-          </h2>
+        <section id='how-it-works' className='pb-24 md:pb-40'>
+          <motion.h2
+            className='serif text-3xl md:text-[40px] md:leading-[48px] text-stone-900 text-center mb-16'
+            {...fadeUp}
+          >
+            Así de simple
+          </motion.h2>
 
-          <div className='grid md:grid-cols-3 gap-8'>
+          <motion.div
+            className='grid md:grid-cols-3 gap-10'
+            variants={staggerContainer}
+            initial='initial'
+            whileInView='whileInView'
+            viewport={{ once: true, margin: '-100px' }}
+          >
             {[
               {
                 step: '1',
-                title: 'Upload your PDF',
+                title: 'Sube tu PDF',
                 description:
-                  'Drag and drop or browse to upload your PDF file. Supports up to 10MB.'
+                  'Arrastra y suelta o selecciona tu archivo PDF. Compatible con catálogos, portfolios, revistas y más.'
               },
               {
                 step: '2',
-                title: 'Auto-processing',
+                title: 'Procesamos automáticamente',
                 description:
-                  'We automatically convert each page into a high-quality interactive flipbook.'
+                  'Convertimos cada página en un flipbook interactivo con efecto de pasar páginas en alta calidad.'
               },
               {
                 step: '3',
-                title: 'Share anywhere',
+                title: 'Comparte con un link',
                 description:
-                  'Get a shareable link or embed code to add the flipbook to your website.'
+                  'Obtén un enlace compartible o código embed para añadir el flipbook a tu web.'
               }
             ].map((item) => (
-              <div key={item.step} className='text-center'>
-                <div className='w-14 h-14 mx-auto mb-4 rounded-full bg-[#e94560]/20 flex items-center justify-center'>
-                  <span className='text-2xl font-bold text-[#e94560]'>
+              <motion.div key={item.step} className='text-center' variants={staggerItem}>
+                <div className='w-14 h-14 mx-auto mb-5 rounded-full bg-[#f0fdf4] border border-[#dcfce7] flex items-center justify-center'>
+                  <span className='text-xl font-bold text-[#166534]'>
                     {item.step}
                   </span>
                 </div>
-                <h3 className='text-xl font-semibold text-white mb-2'>
+                <h3 className='text-xl font-medium text-stone-900 mb-3'>
                   {item.title}
                 </h3>
-                <p className='text-gray-400'>{item.description}</p>
-              </div>
+                <p className='text-stone-500 leading-relaxed'>{item.description}</p>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </section>
 
         {/* Features */}
-        <section className='mt-32'>
-          <h2 className='text-3xl font-bold text-white text-center mb-12'>
-            Features
-          </h2>
+        <section className='pb-24 md:pb-40'>
+          <motion.h2
+            className='serif text-3xl md:text-[40px] md:leading-[48px] text-stone-900 text-center mb-16'
+            {...fadeUp}
+          >
+            Pensado para creativos
+          </motion.h2>
 
-          <div className='grid md:grid-cols-2 gap-6'>
+          <motion.div
+            className='grid md:grid-cols-2 gap-6'
+            variants={staggerContainer}
+            initial='initial'
+            whileInView='whileInView'
+            viewport={{ once: true, margin: '-100px' }}
+          >
             {[
               {
                 icon: (
@@ -134,9 +199,9 @@ export default function Home() {
                     />
                   </svg>
                 ),
-                title: 'Shareable links',
+                title: 'Links compartibles',
                 description:
-                  'Each flipbook gets a unique URL you can share via email, social media, or messaging.'
+                  'Cada flipbook tiene una URL única. Comparte por email, redes sociales o mensajería.'
               },
               {
                 icon: (
@@ -154,9 +219,9 @@ export default function Home() {
                     />
                   </svg>
                 ),
-                title: 'Embed anywhere',
+                title: 'Embed en tu web',
                 description:
-                  'Copy the embed code and add the flipbook directly to your website or blog.'
+                  'Copia el código embed y añade el flipbook directamente a tu sitio web o blog.'
               },
               {
                 icon: (
@@ -174,9 +239,9 @@ export default function Home() {
                     />
                   </svg>
                 ),
-                title: 'Mobile friendly',
+                title: 'Optimizado para móvil',
                 description:
-                  'Works beautifully on all devices with touch support for swiping between pages.'
+                  'Funciona perfectamente en todos los dispositivos con soporte táctil para pasar páginas.'
               },
               {
                 icon: (
@@ -194,42 +259,46 @@ export default function Home() {
                     />
                   </svg>
                 ),
-                title: 'View analytics',
+                title: 'Analytics de visualización',
                 description:
-                  'Track how many people view your flipbook and which pages they read.'
+                  'Mide cuántas personas ven tu flipbook y qué páginas consultan.'
               }
             ].map((feature) => (
-              <div
+              <motion.div
                 key={feature.title}
-                className='bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-colors'
+                className='bg-white border border-stone-200 rounded-[10px] p-8 hover:shadow-[0_4px_12px_-2px_rgba(28,25,23,0.08)] hover:border-stone-300 hover:-translate-y-[2px] transition-all duration-250'
+                variants={staggerItem}
               >
-                <div className='w-12 h-12 mb-4 rounded-lg bg-[#e94560]/20 flex items-center justify-center text-[#e94560]'>
+                <div className='w-12 h-12 mb-5 rounded-[10px] bg-[#f0fdf4] border border-[#dcfce7] flex items-center justify-center text-[#166534]'>
                   {feature.icon}
                 </div>
-                <h3 className='text-lg font-semibold text-white mb-2'>
+                <h3 className='text-lg font-medium text-stone-900 mb-2'>
                   {feature.title}
                 </h3>
-                <p className='text-gray-400'>{feature.description}</p>
-              </div>
+                <p className='text-stone-500 leading-relaxed'>{feature.description}</p>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </section>
 
         {/* CTA */}
-        <section className='mt-32 text-center'>
-          <div className='bg-gradient-to-r from-[#e94560]/20 to-[#e94560]/10 rounded-2xl p-12 border border-[#e94560]/20'>
-            <h2 className='text-3xl font-bold text-white mb-4'>
-              Ready to create your flipbook?
+        <section className='pb-24 md:pb-40 text-center'>
+          <motion.div
+            className='bg-[#f0fdf4] border border-[#dcfce7] rounded-[16px] py-20 px-12'
+            {...fadeUp}
+          >
+            <h2 className='serif text-3xl md:text-[40px] md:leading-[48px] text-stone-900 mb-4'>
+              Tus diseños merecen ser vistos
             </h2>
-            <p className='text-gray-400 mb-8 max-w-xl mx-auto'>
-              No registration needed. Upload your PDF and get a shareable
-              flipbook in under a minute.
+            <p className='text-stone-500 mb-10 max-w-xl mx-auto text-lg'>
+              Sin registro necesario. Sube tu PDF y obtén un flipbook compartible
+              en menos de un minuto.
             </p>
             <Link
               href='/create'
-              className='inline-flex items-center gap-2 px-8 py-4 bg-[#e94560] text-white rounded-xl hover:bg-[#d63d56] transition-all hover:scale-105 font-semibold text-lg'
+              className='inline-flex items-center gap-2 px-8 py-4 bg-[#166534] text-white rounded-full hover:bg-[#14532d] transition-all hover:-translate-y-[1px] hover:shadow-[0_4px_12px_-2px_rgba(28,25,23,0.08)] font-medium text-lg'
             >
-              Get started for free
+              Empieza gratis
               <svg
                 className='w-5 h-5'
                 fill='none'
@@ -244,14 +313,14 @@ export default function Home() {
                 />
               </svg>
             </Link>
-          </div>
+          </motion.div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className='border-t border-white/10 py-8'>
-        <div className='max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4'>
-          <div className='flex items-center gap-2 text-gray-400'>
+      <footer className='border-t border-stone-200 py-10'>
+        <div className='max-w-[1200px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4'>
+          <div className='flex items-center gap-2 text-stone-500'>
             <svg className='w-5 h-5' viewBox='0 0 24 24' fill='currentColor'>
               <path
                 d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
@@ -260,10 +329,11 @@ export default function Home() {
                 fill='none'
               />
             </svg>
-            <span>FlipBook by VIBATO AI</span>
+            <span className='serif'>FlipBook</span>
+            <span className='text-stone-400 text-sm'>by VIBATO</span>
           </div>
-          <p className='text-gray-500 text-sm'>
-            &copy; {new Date().getFullYear()} All rights reserved.
+          <p className='text-stone-400 text-sm'>
+            &copy; {new Date().getFullYear()} Todos los derechos reservados.
           </p>
         </div>
       </footer>

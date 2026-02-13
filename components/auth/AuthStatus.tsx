@@ -20,19 +20,19 @@ export default function AuthStatus({ user }: AuthStatusProps) {
       <nav className='flex items-center gap-4'>
         <Link
           href='/pricing'
-          className='text-gray-300 hover:text-white transition-colors text-sm md:text-base'
+          className='text-stone-600 hover:text-stone-900 transition-colors text-sm md:text-base'
         >
           Precios
         </Link>
         <Link
           href='/login'
-          className='text-gray-300 hover:text-white transition-colors text-sm md:text-base'
+          className='text-stone-600 hover:text-stone-900 transition-colors text-sm md:text-base'
         >
           Iniciar Sesión
         </Link>
         <Link
           href='/create'
-          className='px-3 py-2 md:px-4 md:py-2 bg-[#e94560] text-white rounded-lg hover:bg-[#d63d56] transition-colors font-medium text-sm md:text-base'
+          className='px-5 py-2 md:px-6 md:py-2.5 bg-[#166534] text-white rounded-full hover:bg-[#14532d] hover:-translate-y-[1px] hover:shadow-[0_4px_12px_-2px_rgba(28,25,23,0.08)] transition-all font-medium text-sm md:text-base'
         >
           Crear FlipBook
         </Link>

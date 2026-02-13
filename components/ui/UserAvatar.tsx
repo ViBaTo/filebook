@@ -26,7 +26,7 @@ export default function UserAvatar({ name, email, size = 'md' }: UserAvatarProps
 
   return (
     <div
-      className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[#e94560] to-[#d63d56] flex items-center justify-center text-white font-semibold shadow-lg`}
+      className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[#166534] to-[#14532d] flex items-center justify-center text-white font-semibold shadow-lg`}
     >
       {getInitials()}
     </div>

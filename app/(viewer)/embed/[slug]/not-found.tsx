@@ -1,6 +1,6 @@
 export default function NotFound() {
   return (
-    <div className='h-screen w-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] flex items-center justify-center'>
+    <div className='h-screen w-screen bg-gradient-to-br from-[#1C1917] via-[#292524] to-[#1C1917] flex items-center justify-center'>
       <div className='text-center p-8'>
         <div className='w-16 h-16 mx-auto mb-4 rounded-full bg-white/10 flex items-center justify-center'>
           <svg
@@ -17,7 +17,7 @@ export default function NotFound() {
             />
           </svg>
         </div>
-        <p className='text-white/70 text-sm'>FlipBook not found</p>
+        <p className='text-white/70 text-sm'>FlipBook no encontrado</p>
       </div>
     </div>
   )

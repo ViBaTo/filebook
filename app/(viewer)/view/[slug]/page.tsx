@@ -87,7 +87,7 @@ export default async function ViewPage({ params }: PageProps) {
   const owner = await getBookOwner(book.user_id)
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]'>
+    <div className='min-h-screen bg-gradient-to-br from-[#1C1917] via-[#292524] to-[#1C1917]'>
       {/* Header */}
       <header className='absolute top-0 left-0 right-0 z-50 p-4 flex items-center justify-between'>
         <div className='flex items-center gap-3'>

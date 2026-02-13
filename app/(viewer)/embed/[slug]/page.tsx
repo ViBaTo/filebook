@@ -56,7 +56,7 @@ export default async function EmbedPage({ params }: PageProps) {
   const pagesUrls = (book.pages_urls as string[]) || []
 
   return (
-    <div className='h-screen w-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] overflow-hidden'>
+    <div className='h-screen w-screen bg-gradient-to-br from-[#1C1917] via-[#292524] to-[#1C1917] overflow-hidden'>
       <EmbedViewerWrapper
         bookId={book.id}
         pages={pagesUrls}

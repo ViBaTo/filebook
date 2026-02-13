@@ -80,10 +80,10 @@ export function PDFCompressor({
   return (
     <div className='w-full max-w-xl mx-auto'>
       {/* File info */}
-      <div className='flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-xl mb-6'>
-        <div className='w-12 h-12 rounded-lg bg-[#e94560]/20 flex items-center justify-center flex-shrink-0'>
+      <div className='flex items-center gap-4 p-4 bg-white border border-stone-200 rounded-[10px] mb-6'>
+        <div className='w-12 h-12 rounded-[10px] bg-[#f0fdf4] border border-[#dcfce7] flex items-center justify-center flex-shrink-0'>
           <svg
-            className='w-6 h-6 text-[#e94560]'
+            className='w-6 h-6 text-[#166534]'
             fill='none'
             viewBox='0 0 24 24'
             stroke='currentColor'
@@ -97,17 +97,17 @@ export function PDFCompressor({
           </svg>
         </div>
         <div className='flex-1 min-w-0'>
-          <p className='text-white font-medium truncate'>{file.name}</p>
-          <p className='text-sm text-gray-400'>
-            Tamaño original: <span className='text-[#e94560] font-medium'>{formatBytes(file.size)}</span>
+          <p className='text-stone-900 font-medium truncate'>{file.name}</p>
+          <p className='text-sm text-stone-400'>
+            Tamaño original: <span className='text-[#166534] font-medium'>{formatBytes(file.size)}</span>
           </p>
         </div>
       </div>
 
       {/* Warning banner */}
-      <div className='flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl mb-6'>
+      <div className='flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-[10px] mb-6'>
         <svg
-          className='w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5'
+          className='w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5'
           fill='none'
           viewBox='0 0 24 24'
           stroke='currentColor'
@@ -120,10 +120,10 @@ export function PDFCompressor({
           />
         </svg>
         <div>
-          <p className='text-amber-300 text-sm font-medium'>
+          <p className='text-amber-800 text-sm font-medium'>
             Tu archivo supera los 50 MB
           </p>
-          <p className='text-amber-300/70 text-sm mt-0.5'>
+          <p className='text-amber-700/70 text-sm mt-0.5'>
             Selecciona un nivel de compresión para optimizar el archivo antes de crear el flipbook.
           </p>
         </div>
@@ -132,7 +132,7 @@ export function PDFCompressor({
       {/* Quality selector */}
       {!compressedFile && (
         <div className='space-y-3 mb-6'>
-          <label className='block text-sm font-medium text-gray-400'>
+          <label className='block text-sm font-medium text-stone-600'>
             Nivel de compresión
           </label>
           <div className='grid grid-cols-3 gap-3'>
@@ -145,29 +145,29 @@ export function PDFCompressor({
                   onClick={() => !isCompressing && setSelectedQuality(key)}
                   disabled={isCompressing}
                   className={`
-                    relative p-4 rounded-xl border-2 transition-all duration-200 text-left
+                    relative p-4 rounded-[10px] border-2 transition-all duration-200 text-left
                     ${isSelected
-                      ? 'border-[#e94560] bg-[#e94560]/10'
-                      : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                      ? 'border-[#166534] bg-[#f0fdf4]'
+                      : 'border-stone-200 bg-white hover:border-stone-300 hover:shadow-[0_1px_3px_0_rgba(28,25,23,0.06)]'
                     }
                     ${isCompressing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                   `}
                 >
                   {isSelected && (
-                    <div className='absolute top-2 right-2 w-5 h-5 rounded-full bg-[#e94560] flex items-center justify-center'>
+                    <div className='absolute top-2 right-2 w-5 h-5 rounded-full bg-[#166534] flex items-center justify-center'>
                       <svg className='w-3 h-3 text-white' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                         <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={3} d='M5 13l4 4L19 7' />
                       </svg>
                     </div>
                   )}
                   <div className='text-2xl mb-2'>{icon}</div>
-                  <p className={`font-medium text-sm ${isSelected ? 'text-white' : 'text-gray-300'}`}>
+                  <p className={`font-medium text-sm ${isSelected ? 'text-stone-900' : 'text-stone-600'}`}>
                     {config.label}
                   </p>
-                  <p className={`text-xs mt-0.5 ${isSelected ? 'text-[#e94560]' : 'text-gray-500'}`}>
+                  <p className={`text-xs mt-0.5 ${isSelected ? 'text-[#166534]' : 'text-stone-400'}`}>
                     {config.targetLabel}
                   </p>
-                  <p className='text-xs text-gray-500 mt-1'>
+                  <p className='text-xs text-stone-400 mt-1'>
                     {config.description}
                   </p>
                 </button>
@@ -180,30 +180,30 @@ export function PDFCompressor({
       {/* Compression progress */}
       {isCompressing && progress && (
         <div className='mb-6'>
-          <div className='h-2 bg-white/10 rounded-full overflow-hidden mb-2'>
+          <div className='h-2 bg-stone-100 rounded-full overflow-hidden mb-2'>
             <div
-              className='h-full bg-[#e94560] transition-all duration-300 ease-out'
+              className='h-full bg-[#166534] transition-all duration-300 ease-out'
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <p className='text-sm text-gray-400 text-center'>{progressLabel}</p>
+          <p className='text-sm text-stone-400 text-center'>{progressLabel}</p>
         </div>
       )}
 
       {/* Compression result */}
       {compressedFile && (
-        <div className='p-4 bg-green-500/10 border border-green-500/20 rounded-xl mb-6'>
+        <div className='p-4 bg-emerald-50 border border-emerald-200 rounded-[10px] mb-6'>
           <div className='flex items-center gap-3'>
-            <div className='w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0'>
-              <svg className='w-5 h-5 text-green-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+            <div className='w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0'>
+              <svg className='w-5 h-5 text-emerald-600' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
               </svg>
             </div>
             <div className='flex-1'>
-              <p className='text-green-300 font-medium text-sm'>Compresión completada</p>
-              <p className='text-green-300/70 text-sm'>
-                {formatBytes(file.size)} → <span className='text-green-300 font-medium'>{formatBytes(compressedFile.size)}</span>
-                <span className='text-green-400/60 ml-2'>
+              <p className='text-emerald-800 font-medium text-sm'>Compresión completada</p>
+              <p className='text-emerald-700/70 text-sm'>
+                {formatBytes(file.size)} → <span className='text-emerald-800 font-medium'>{formatBytes(compressedFile.size)}</span>
+                <span className='text-emerald-600/60 ml-2'>
                   ({Math.round((1 - compressedFile.size / file.size) * 100)}% reducido)
                 </span>
               </p>

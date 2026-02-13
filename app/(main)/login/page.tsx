@@ -22,18 +22,18 @@ export default function LoginPage() {
   const isPending = mode === 'login' ? loginPending : signupPending
 
   return (
-    <div className='min-h-screen bg-linear-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] flex items-center justify-center p-4'>
+    <div className='min-h-screen bg-[#FAFAF9] flex items-center justify-center p-4'>
       {/* Background decoration */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-        <div className='absolute top-1/4 left-1/4 w-96 h-96 bg-[#e94560]/10 rounded-full blur-3xl' />
-        <div className='absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#0f3460]/30 rounded-full blur-3xl' />
+        <div className='absolute top-1/4 left-1/4 w-96 h-96 bg-[#f0fdf4] rounded-full blur-3xl' />
+        <div className='absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#dcfce7]/50 rounded-full blur-3xl' />
       </div>
 
       <div className='w-full max-w-md relative'>
         {/* Logo */}
         <Link
           href='/'
-          className='flex items-center justify-center gap-2 text-white mb-8'
+          className='flex items-center justify-center gap-2 text-stone-900 mb-8'
         >
           <svg className='w-10 h-10' viewBox='0 0 24 24' fill='currentColor'>
             <path
@@ -43,29 +43,29 @@ export default function LoginPage() {
               fill='none'
             />
           </svg>
-          <span className='text-2xl font-bold'>FlipBook</span>
+          <span className='serif text-2xl font-bold'>FlipBook</span>
         </Link>
 
         {/* Card */}
-        <div className='bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl'>
+        <div className='bg-white border border-stone-200 rounded-[16px] p-8 shadow-[0_12px_24px_-4px_rgba(28,25,23,0.08)]'>
           {/* Tabs */}
-          <div className='flex mb-8 bg-white/5 rounded-lg p-1'>
+          <div className='flex mb-8 bg-stone-100 rounded-[10px] p-1'>
             <button
               onClick={() => setMode('login')}
-              className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all ${
+              className={`flex-1 py-2.5 text-sm font-medium rounded-[8px] transition-all ${
                 mode === 'login'
-                  ? 'bg-[#e94560] text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-[#166534] text-white shadow-sm'
+                  : 'text-stone-500 hover:text-stone-900'
               }`}
             >
               Iniciar Sesión
             </button>
             <button
               onClick={() => setMode('signup')}
-              className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all ${
+              className={`flex-1 py-2.5 text-sm font-medium rounded-[8px] transition-all ${
                 mode === 'signup'
-                  ? 'bg-[#e94560] text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-[#166534] text-white shadow-sm'
+                  : 'text-stone-500 hover:text-stone-900'
               }`}
             >
               Crear Cuenta
@@ -74,8 +74,8 @@ export default function LoginPage() {
 
           {/* Success message */}
           {state.success && (
-            <div className='mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg'>
-              <p className='text-green-400 text-sm flex items-center gap-2'>
+            <div className='mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-[10px]'>
+              <p className='text-emerald-800 text-sm flex items-center gap-2'>
                 <svg
                   className='w-5 h-5 shrink-0'
                   fill='none'
@@ -96,8 +96,8 @@ export default function LoginPage() {
 
           {/* Error message */}
           {state.error && (
-            <div className='mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg'>
-              <p className='text-red-400 text-sm flex items-center gap-2'>
+            <div className='mb-6 p-4 bg-red-50 border border-red-200 rounded-[10px]'>
+              <p className='text-red-800 text-sm flex items-center gap-2'>
                 <svg
                   className='w-5 h-5 shrink-0'
                   fill='none'
@@ -167,7 +167,7 @@ export default function LoginPage() {
               <div className='flex justify-end'>
                 <Link
                   href='/forgot-password'
-                  className='text-sm text-gray-400 hover:text-[#e94560] transition-colors'
+                  className='text-sm text-stone-500 hover:text-[#166534] transition-colors'
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
@@ -187,10 +187,10 @@ export default function LoginPage() {
           {/* Divider */}
           <div className='relative my-8'>
             <div className='absolute inset-0 flex items-center'>
-              <div className='w-full border-t border-white/10' />
+              <div className='w-full border-t border-stone-200' />
             </div>
             <div className='relative flex justify-center text-sm'>
-              <span className='px-4 bg-[#16213e] text-gray-400'>
+              <span className='px-4 bg-white text-stone-400'>
                 o continúa con
               </span>
             </div>
@@ -204,7 +204,6 @@ export default function LoginPage() {
               className='w-full'
               onClick={() => {
                 // Google login would be implemented here
-                // For now just show it's available
               }}
             >
               <svg className='w-5 h-5 mr-2' viewBox='0 0 24 24'>
@@ -231,13 +230,13 @@ export default function LoginPage() {
 
           {/* Terms */}
           {mode === 'signup' && (
-            <p className='mt-6 text-center text-xs text-gray-500'>
+            <p className='mt-6 text-center text-xs text-stone-400'>
               Al crear una cuenta, aceptas nuestros{' '}
-              <Link href='/terms' className='text-[#e94560] hover:underline'>
+              <Link href='/terms' className='text-[#166534] hover:underline'>
                 Términos de Servicio
               </Link>{' '}
               y{' '}
-              <Link href='/privacy' className='text-[#e94560] hover:underline'>
+              <Link href='/privacy' className='text-[#166534] hover:underline'>
                 Política de Privacidad
               </Link>
             </p>
@@ -245,10 +244,10 @@ export default function LoginPage() {
         </div>
 
         {/* Back to home */}
-        <p className='mt-8 text-center text-gray-400 text-sm'>
+        <p className='mt-8 text-center text-stone-400 text-sm'>
           <Link
             href='/'
-            className='hover:text-white transition-colors inline-flex items-center gap-2'
+            className='hover:text-stone-700 transition-colors inline-flex items-center gap-2'
           >
             <svg
               className='w-4 h-4'
