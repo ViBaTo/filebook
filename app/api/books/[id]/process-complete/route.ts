@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getUserEmailRecipient } from '@/lib/email/recipients'
+import { buildAbsoluteUrl } from '@/lib/email/links'
+import { sendFlipbookReadyEmail } from '@/lib/email/templates/flipbook-ready'
 import { createClient } from '@/lib/supabase/server'
 
 interface RouteParams {
@@ -59,6 +62,23 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (error) {
       console.error('Error completing processing:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    if (book.user_id && existingBook.status !== 'ready') {
+      try {
+        const recipient = await getUserEmailRecipient(book.user_id)
+
+        if (recipient) {
+          await sendFlipbookReadyEmail({
+            to: recipient.email,
+            name: recipient.name,
+            bookTitle: book.title,
+            bookUrl: buildAbsoluteUrl(`/view/${book.slug}`)
+          })
+        }
+      } catch (emailError) {
+        console.error('Error sending flipbook ready email:', emailError)
+      }
     }
 
     return NextResponse.json(book)

@@ -1,5 +1,6 @@
 'use server'
 
+import { sendPasswordChangedEmail } from '@/lib/email/templates/password-changed'
 import { createClient } from '@/lib/supabase/server'
 
 export type ProfileState = {
@@ -106,6 +107,19 @@ export async function updatePassword(
 
   if (error) {
     return { error: 'Error al cambiar la contraseña' }
+  }
+
+  if (user.email) {
+    try {
+      const metadata = user.user_metadata as { full_name?: string } | null
+
+      await sendPasswordChangedEmail({
+        to: user.email,
+        name: metadata?.full_name
+      })
+    } catch (emailError) {
+      console.error('Failed to send password changed email:', emailError)
+    }
   }
 
   return { success: 'Contraseña actualizada correctamente' }

@@ -8,6 +8,14 @@ import { Input } from '@/components/ui/Input'
 
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [verificationState, setVerificationState] = useState<{
+    error?: string
+    success?: string
+    isLoading?: boolean
+  }>({})
   const [loginState, loginAction, loginPending] = useActionState<
     AuthState,
     FormData
@@ -20,6 +28,58 @@ export default function LoginPage() {
   const state = mode === 'login' ? loginState : signupState
   const action = mode === 'login' ? loginAction : signupAction
   const isPending = mode === 'login' ? loginPending : signupPending
+
+  const handleResendVerification = async () => {
+    if (!email || !password) {
+      setVerificationState({
+        error:
+          'Introduce el email y la contraseña de la cuenta para reenviar la verificación.'
+      })
+      return
+    }
+
+    setVerificationState({ isLoading: true })
+
+    try {
+      const response = await fetch('/api/email/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          name
+        })
+      })
+
+      const result = (await response.json()) as {
+        error?: string
+        success?: string
+      }
+
+      if (!response.ok) {
+        setVerificationState({
+          error: result.error || 'No se pudo reenviar el email de verificación.'
+        })
+        return
+      }
+
+      setVerificationState({
+        success:
+          result.success || 'Te hemos enviado un nuevo email de verificación.'
+      })
+    } catch {
+      setVerificationState({
+        error: 'No se pudo reenviar el email de verificación.'
+      })
+    } finally {
+      setVerificationState((current) => ({
+        ...current,
+        isLoading: false
+      }))
+    }
+  }
 
   return (
     <div className='min-h-screen bg-[#FAFAF9] flex items-center justify-center p-4'>
@@ -126,6 +186,8 @@ export default function LoginPage() {
                 label='Nombre'
                 placeholder='Tu nombre'
                 autoComplete='name'
+                value={name}
+                onChange={(event) => setName(event.target.value)}
               />
             )}
 
@@ -137,6 +199,11 @@ export default function LoginPage() {
               placeholder='tu@email.com'
               autoComplete='email'
               required
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value)
+                setVerificationState({})
+              }}
             />
 
             <Input
@@ -149,6 +216,11 @@ export default function LoginPage() {
                 mode === 'login' ? 'current-password' : 'new-password'
               }
               required
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value)
+                setVerificationState({})
+              }}
             />
 
             {mode === 'signup' && (
@@ -171,6 +243,34 @@ export default function LoginPage() {
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
+              </div>
+            )}
+
+            {mode === 'login' && state.emailForVerification && (
+              <div className='rounded-[10px] border border-[#dcfce7] bg-[#f0fdf4] p-4'>
+                <p className='text-sm text-stone-700'>
+                  Si no encuentras el correo, podemos enviarte otro enlace de
+                  verificación.
+                </p>
+                <Button
+                  type='button'
+                  variant='secondary'
+                  className='mt-3 w-full'
+                  isLoading={verificationState.isLoading}
+                  onClick={handleResendVerification}
+                >
+                  Reenviar email de verificación
+                </Button>
+                {verificationState.success && (
+                  <p className='mt-3 text-sm text-emerald-700'>
+                    {verificationState.success}
+                  </p>
+                )}
+                {verificationState.error && (
+                  <p className='mt-3 text-sm text-red-700'>
+                    {verificationState.error}
+                  </p>
+                )}
               </div>
             )}
 
