@@ -28,6 +28,28 @@ type GenerateLinkResult = {
   userId?: string
 }
 
+type OAuthWelcomeCandidate = {
+  created_at?: string
+  last_sign_in_at?: string | null
+}
+
+const FIRST_OAUTH_SIGN_IN_WINDOW_MS = 60 * 1000
+
+export function shouldSendOAuthWelcomeEmail(candidate: OAuthWelcomeCandidate): boolean {
+  if (!candidate.created_at || !candidate.last_sign_in_at) {
+    return false
+  }
+
+  const createdAt = new Date(candidate.created_at).getTime()
+  const lastSignInAt = new Date(candidate.last_sign_in_at).getTime()
+
+  if (Number.isNaN(createdAt) || Number.isNaN(lastSignInAt)) {
+    return false
+  }
+
+  return Math.abs(lastSignInAt - createdAt) <= FIRST_OAUTH_SIGN_IN_WINDOW_MS
+}
+
 async function generateLinkResult(input: GenerateLinkInput): Promise<GenerateLinkResult> {
   const { data, error } = await getSupabaseAdmin().auth.admin.generateLink(input)
 

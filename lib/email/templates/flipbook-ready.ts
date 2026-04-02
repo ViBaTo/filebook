@@ -1,4 +1,4 @@
-import { FROM_EMAIL, getResendClient } from '@/lib/email/client'
+import { getFromEmail, getResendClient } from '@/lib/email/client'
 import {
   ctaButton,
   emailLayout,
@@ -40,7 +40,7 @@ export async function sendFlipbookReadyEmail({
   `)
 
   const { error } = await resend.emails.send({
-    from: FROM_EMAIL,
+    from: getFromEmail('product'),
     to: [to],
     subject: 'Tu FlipBook ya esta listo',
     html

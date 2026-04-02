@@ -1,4 +1,4 @@
-import { FROM_EMAIL, getResendClient } from '@/lib/email/client'
+import { getFromEmail, getResendClient } from '@/lib/email/client'
 import { buildAbsoluteUrl } from '@/lib/email/links'
 import {
   ctaButton,
@@ -37,7 +37,7 @@ export async function sendPasswordChangedEmail({
   `)
 
   const { error } = await resend.emails.send({
-    from: FROM_EMAIL,
+    from: getFromEmail('auth'),
     to: [to],
     subject: 'Tu contraseña de FlipBook se ha actualizado',
     html

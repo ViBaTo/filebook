@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { buildAbsoluteUrl } from '@/lib/email/links'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe, type PlanType } from '@/lib/stripe/config'
 
@@ -90,8 +91,8 @@ export async function POST(request: NextRequest) {
             quantity: 1
           }
         ],
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/create?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+        success_url: `${buildAbsoluteUrl('/create')}?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${buildAbsoluteUrl('/pricing')}?canceled=true`,
         metadata: {
           user_id: user.id,
           plan: 'single',
@@ -112,8 +113,8 @@ export async function POST(request: NextRequest) {
             quantity: 1
           }
         ],
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?success=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+        success_url: `${buildAbsoluteUrl('/pricing')}?success=true&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${buildAbsoluteUrl('/pricing')}?canceled=true`,
         metadata: {
           user_id: user.id,
           plan
