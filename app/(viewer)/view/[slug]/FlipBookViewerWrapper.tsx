@@ -23,7 +23,7 @@ export function FlipBookViewerWrapper({
   const analyticsIdRef = useRef<string | null>(null)
   const pagesViewedRef = useRef(new Set<number>())
   const maxPageRef = useRef(0)
-  const startTimeRef = useRef(Date.now())
+  const startTimeRef = useRef<number | null>(null)
 
   // Track page views
   const handlePageChange = (page: number) => {
@@ -35,6 +35,8 @@ export function FlipBookViewerWrapper({
 
   // Register visit on mount
   useEffect(() => {
+    startTimeRef.current = Date.now()
+
     const registerVisit = async () => {
       try {
         const response = await fetch('/api/analytics', {
@@ -62,9 +64,10 @@ export function FlipBookViewerWrapper({
   // Update analytics on unmount or page close
   useEffect(() => {
     const updateAnalytics = () => {
-      if (!analyticsIdRef.current) return
+      const startTime = startTimeRef.current
+      if (!analyticsIdRef.current || startTime === null) return
 
-      const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000)
+      const timeSpent = Math.floor((Date.now() - startTime) / 1000)
       const pagesViewed = pagesViewedRef.current.size
 
       // Use sendBeacon for reliable delivery on page close

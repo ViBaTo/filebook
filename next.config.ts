@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     resolveAlias: {
       // Fix for pdfjs-dist canvas requirement
-      canvas: { browser: './empty-module.js' }
+      canvas: { browser: './empty-module.ts' }
     }
   },
   // Webpack fallback for older builds

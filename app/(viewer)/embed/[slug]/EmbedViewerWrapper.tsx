@@ -21,7 +21,7 @@ export function EmbedViewerWrapper({
   const analyticsIdRef = useRef<string | null>(null)
   const pagesViewedRef = useRef(new Set<number>())
   const maxPageRef = useRef(0)
-  const startTimeRef = useRef(Date.now())
+  const startTimeRef = useRef<number | null>(null)
 
   // Get embed domain from parent window
   const getEmbedDomain = () => {
@@ -61,6 +61,8 @@ export function EmbedViewerWrapper({
 
   // Register visit on mount
   useEffect(() => {
+    startTimeRef.current = Date.now()
+
     const registerVisit = async () => {
       try {
         const response = await fetch('/api/analytics', {
@@ -103,9 +105,10 @@ export function EmbedViewerWrapper({
   // Update analytics on unmount or page close
   useEffect(() => {
     const updateAnalytics = () => {
-      if (!analyticsIdRef.current) return
+      const startTime = startTimeRef.current
+      if (!analyticsIdRef.current || startTime === null) return
 
-      const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000)
+      const timeSpent = Math.floor((Date.now() - startTime) / 1000)
       const pagesViewed = pagesViewedRef.current.size
 
       const data = JSON.stringify({

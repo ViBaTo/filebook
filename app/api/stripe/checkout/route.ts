@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getStripe, PLANS, type PlanType } from '@/lib/stripe/config'
+import { getStripe, type PlanType } from '@/lib/stripe/config'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +22,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const planConfig = PLANS[plan]
     const isOneTime = plan === 'single'
 
     const supabase = await createClient()
