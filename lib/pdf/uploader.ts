@@ -69,19 +69,20 @@ export async function updateBookWithPages(
   pagesUrls: string[],
   pageCount: number
 ): Promise<void> {
-  const supabase = createClient()
-
-  const { error } = await supabase
-    .from('fb_books')
-    .update({
+  const response = await fetch(`/api/books/${bookId}/process-complete`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
       pages_urls: pagesUrls,
-      page_count: pageCount,
-      status: 'ready'
+      page_count: pageCount
     })
-    .eq('id', bookId)
+  })
 
-  if (error) {
-    throw new Error(`Failed to update book: ${error.message}`)
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null
+    throw new Error(`Failed to complete book: ${payload?.error || response.statusText}`)
   }
 }
 

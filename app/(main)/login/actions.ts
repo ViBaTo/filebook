@@ -1,6 +1,7 @@
 'use server'
 
 import { sendSignupVerificationFlowEmail } from '@/lib/email/auth'
+import { buildAbsoluteUrl } from '@/lib/email/links'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -102,7 +103,7 @@ export async function loginWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`
+      redirectTo: buildAbsoluteUrl('/auth/callback')
     }
   })
 

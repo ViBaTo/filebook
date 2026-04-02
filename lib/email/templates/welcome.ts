@@ -1,4 +1,4 @@
-import { FROM_EMAIL, getResendClient } from '@/lib/email/client'
+import { getFromEmail, getResendClient } from '@/lib/email/client'
 import { buildAbsoluteUrl } from '@/lib/email/links'
 import {
   ctaButton,
@@ -44,7 +44,7 @@ export async function sendWelcomeEmail({
   `)
 
   const { error } = await resend.emails.send({
-    from: FROM_EMAIL,
+    from: getFromEmail('product'),
     to: [to],
     subject: 'Bienvenido a FlipBook',
     html

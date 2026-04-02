@@ -1,4 +1,4 @@
-import { FROM_EMAIL, getResendClient } from '@/lib/email/client'
+import { getFromEmail, getResendClient } from '@/lib/email/client'
 import {
   ctaButton,
   emailLayout,
@@ -43,7 +43,7 @@ export async function sendPaymentFailedEmail({
   `)
 
   const { error } = await resend.emails.send({
-    from: FROM_EMAIL,
+    from: getFromEmail('product'),
     to: [to],
     subject: 'No hemos podido procesar tu pago de FlipBook',
     html

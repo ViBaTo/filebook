@@ -8,11 +8,29 @@ Create a `.env.local` file before running the app:
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 RESEND_API_KEY=re_xxxxxxxxx
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
 ```
 
-For transactional emails, the sender is configured in `lib/email/client.ts` as
-`VIBATO <noreply@flip.vibato.io>`. Make sure the domain is verified in Resend
-before using it in production.
+## Email setup
+
+Transactional emails use Resend with two sender identities configured in
+`lib/email/client.ts`:
+
+- Auth emails: `FlipBook by VIBATO <noreply@vibato.io>`
+- Product emails: `FlipBook by VIBATO <hello@vibato.io>`
+
+Before using email flows in production:
+
+- Verify `vibato.io` in Resend
+- Set `RESEND_API_KEY` in local and Railway
+- Set `SUPABASE_SERVICE_ROLE_KEY` so the custom auth flow can generate secure
+  signup and recovery links
+- Keep `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_APP_URL` aligned to the same
+  public origin to avoid mismatches between email links, OAuth redirects and
+  Stripe redirects
+
+Auth emails are sent through the custom Resend flow in `lib/email/auth.ts`,
+not through Supabase's default hosted email templates.
 
 First, run the development server:
 

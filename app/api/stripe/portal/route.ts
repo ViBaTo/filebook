@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { buildAbsoluteUrl } from '@/lib/email/links'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/config'
 
@@ -33,7 +34,7 @@ export async function POST() {
     // Create billing portal session
     const session = await getStripe().billingPortal.sessions.create({
       customer: subscription.stripe_customer_id,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/profile`
+      return_url: buildAbsoluteUrl('/profile')
     })
 
     return NextResponse.json({ url: session.url })

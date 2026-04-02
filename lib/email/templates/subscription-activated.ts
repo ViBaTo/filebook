@@ -1,4 +1,4 @@
-import { FROM_EMAIL, getResendClient } from '@/lib/email/client'
+import { getFromEmail, getResendClient } from '@/lib/email/client'
 import {
   ctaButton,
   emailLayout,
@@ -40,7 +40,7 @@ export async function sendSubscriptionActivatedEmail({
   `)
 
   const { error } = await resend.emails.send({
-    from: FROM_EMAIL,
+    from: getFromEmail('product'),
     to: [to],
     subject: `Tu plan ${planName} de FlipBook ya esta activo`,
     html
