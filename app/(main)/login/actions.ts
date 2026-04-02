@@ -1,11 +1,13 @@
 'use server'
 
+import { sendSignupVerificationFlowEmail } from '@/lib/email/auth'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export type AuthState = {
   error?: string
   success?: string
+  emailForVerification?: string
 }
 
 export async function login(
@@ -31,7 +33,10 @@ export async function login(
       return { error: 'Email o contraseña incorrectos' }
     }
     if (error.message.includes('Email not confirmed')) {
-      return { error: 'Por favor confirma tu email antes de iniciar sesión' }
+      return {
+        error: 'Por favor confirma tu email antes de iniciar sesión',
+        emailForVerification: email
+      }
     }
     return { error: error.message }
   }
@@ -43,8 +48,6 @@ export async function signup(
   prevState: AuthState,
   formData: FormData
 ): Promise<AuthState> {
-  const supabase = await createClient()
-
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const confirmPassword = formData.get('confirmPassword') as string
@@ -62,27 +65,28 @@ export async function signup(
     return { error: 'La contraseña debe tener al menos 6 caracteres' }
   }
 
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: name
-      },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`
-    }
-  })
+  try {
+    await sendSignupVerificationFlowEmail({
+      email: email.trim().toLowerCase(),
+      password,
+      name
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Error al crear la cuenta'
 
-  if (error) {
-    if (error.message.includes('already registered')) {
+    if (
+      message.includes('already registered') ||
+      message.includes('already been registered')
+    ) {
       return { error: 'Este email ya está registrado' }
     }
-    return { error: error.message }
+
+    return { error: message }
   }
 
   return {
     success:
-      'Cuenta creada. Por favor revisa tu email para confirmar tu cuenta.'
+      'Cuenta creada. Te hemos enviado un email de verificación para activar tu cuenta.'
   }
 }
 

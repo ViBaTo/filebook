@@ -2,6 +2,18 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+Create a `.env.local` file before running the app:
+
+```bash
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+RESEND_API_KEY=re_xxxxxxxxx
+```
+
+For transactional emails, the sender is configured in `lib/email/client.ts` as
+`VIBATO <noreply@flip.vibato.io>`. Make sure the domain is verified in Resend
+before using it in production.
+
 First, run the development server:
 
 ```bash
