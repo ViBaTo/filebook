@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { useDropzone } from 'react-dropzone'
 import { ProcessingProgress } from '@/components/upload/ProcessingProgress'
 import { PDFCompressor } from '@/components/upload/PDFCompressor'
 import { Button } from '@/components/ui/Button'
+import { formatBytes } from '@/lib/utils/format'
 import { createClient } from '@/lib/supabase/client'
 import {
   type CompressionQuality,
@@ -64,8 +66,9 @@ export default function CreatePage() {
         // Dynamically import PDF processing modules (browser-only)
         const { loadPDFFromFile, renderPDFToImages } =
           await import('@/lib/pdf/renderer')
-        const { uploadRenderedPages, updateBookWithPages, markBookAsError } =
-          await import('@/lib/pdf/uploader')
+        const { uploadRenderedPages, updateBookWithPages } = await import(
+          '@/lib/pdf/uploader'
+        )
 
         // Load the PDF
         const pdfData = await loadPDFFromFile(file)
@@ -144,7 +147,7 @@ export default function CreatePage() {
   )
 
   const handleUploadComplete = useCallback(
-    (bookId: string, slug: string, pdfUrl: string) => {
+    (bookId: string) => {
       if (pdfFile) {
         processAndUpload(bookId, pdfFile, compressionQuality)
       }
@@ -521,8 +524,7 @@ function PDFUploaderWithCapture({
 
       // Check if user is authenticated
       const {
-        data: { user },
-        error: authError
+        data: { user }
       } = await supabase.auth.getUser()
 
       const { generateSlug } = await import('@/lib/utils/slug')
@@ -618,10 +620,6 @@ function PDFUploaderWithCapture({
     setBookTitle('')
   }
 
-  // Import dropzone dynamically to handle SSR
-  const { useDropzone } = require('react-dropzone')
-  const { formatBytes } = require('@/lib/utils/format')
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleDrop,
     accept: {
@@ -681,7 +679,7 @@ function PDFUploaderWithCapture({
       ) : (
         <div className='border border-stone-200 rounded-[16px] p-6 bg-white'>
           <div className='flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-[10px] bg-[#f0fdf4] border border-[#dcfce7] flex items-center justify-center flex-shrink-0'>
+            <div className='w-12 h-12 rounded-[10px] bg-[#f0fdf4] border border-[#dcfce7] flex items-center justify-center shrink-0'>
               <svg
                 className='w-6 h-6 text-[#166534]'
                 fill='none'

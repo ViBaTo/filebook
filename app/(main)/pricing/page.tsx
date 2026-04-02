@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, Suspense, useEffect } from 'react'
-import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { useSearchParams } from 'next/navigation'
 
@@ -316,7 +315,7 @@ function PricingContent() {
                 {plan.features.map((feature, index) => (
                   <li key={index} className='flex items-start gap-3'>
                     <svg
-                      className='w-5 h-5 text-[#16a34a] flex-shrink-0 mt-0.5'
+                      className='w-5 h-5 text-[#16a34a] shrink-0 mt-0.5'
                       fill='none'
                       viewBox='0 0 24 24'
                       stroke='currentColor'
@@ -334,7 +333,7 @@ function PricingContent() {
                 {plan.limitations.map((limitation, index) => (
                   <li key={`lim-${index}`} className='flex items-start gap-3'>
                     <svg
-                      className='w-5 h-5 text-stone-300 flex-shrink-0 mt-0.5'
+                      className='w-5 h-5 text-stone-300 shrink-0 mt-0.5'
                       fill='none'
                       viewBox='0 0 24 24'
                       stroke='currentColor'

@@ -34,8 +34,7 @@ export function PDFUploader({
     try {
       // Check if user is authenticated
       const {
-        data: { user },
-        error: authError
+        data: { user }
       } = await supabase.auth.getUser()
 
       const slug = generateSlug()
@@ -193,7 +192,7 @@ export function PDFUploader({
       ) : (
         <div className='border border-stone-200 rounded-[16px] p-6 bg-white'>
           <div className='flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-[10px] bg-[#f0fdf4] border border-[#dcfce7] flex items-center justify-center flex-shrink-0'>
+            <div className='w-12 h-12 rounded-[10px] bg-[#f0fdf4] border border-[#dcfce7] flex items-center justify-center shrink-0'>
               <svg
                 className='w-6 h-6 text-[#166534]'
                 fill='none'
