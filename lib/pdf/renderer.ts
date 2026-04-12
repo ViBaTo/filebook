@@ -49,29 +49,29 @@ export async function getPDFInfo(pdfData: ArrayBuffer): Promise<PDFInfo> {
 
 // Check if a canvas is mostly blank (white) by sampling pixels
 function isCanvasBlank(context: CanvasRenderingContext2D, width: number, height: number): boolean {
-  // Sample 20 points spread across the canvas
-  const samplePoints = [
-    [0.25, 0.25], [0.5, 0.25], [0.75, 0.25],
-    [0.25, 0.5],  [0.5, 0.5],  [0.75, 0.5],
-    [0.25, 0.75], [0.5, 0.75], [0.75, 0.75],
-    [0.1, 0.1],   [0.9, 0.9],  [0.1, 0.9],
-    [0.9, 0.1],   [0.3, 0.6],  [0.6, 0.3],
-    [0.4, 0.8],   [0.8, 0.4],  [0.2, 0.35],
-    [0.65, 0.65], [0.45, 0.15],
-  ]
-
+  // Sample a 10x10 grid = 100 points for better coverage.
+  // Read the full canvas once to avoid 100 individual GPU→CPU readbacks.
+  const gridSize = 10
+  const threshold = 245
+  const imageData = context.getImageData(0, 0, width, height).data
   let nonWhiteCount = 0
-  for (const [rx, ry] of samplePoints) {
-    const x = Math.floor(rx * width)
-    const y = Math.floor(ry * height)
-    const pixel = context.getImageData(x, y, 1, 1).data
-    // Check if pixel is NOT white/near-white (allow threshold of 250)
-    if (pixel[0] < 250 || pixel[1] < 250 || pixel[2] < 250) {
-      nonWhiteCount++
+
+  for (let gx = 0; gx < gridSize; gx++) {
+    for (let gy = 0; gy < gridSize; gy++) {
+      const x = Math.floor(((gx + 0.5) / gridSize) * width)
+      const y = Math.floor(((gy + 0.5) / gridSize) * height)
+      const offset = (y * width + x) * 4
+      if (
+        imageData[offset] < threshold ||
+        imageData[offset + 1] < threshold ||
+        imageData[offset + 2] < threshold
+      ) {
+        nonWhiteCount++
+      }
     }
   }
-  // If fewer than 2 non-white samples, consider it blank
-  return nonWhiteCount < 2
+  // If fewer than 3 of 100 samples are non-white, consider it blank
+  return nonWhiteCount < 3
 }
 
 export async function renderPDFToImages(

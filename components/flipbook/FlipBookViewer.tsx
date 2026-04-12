@@ -40,12 +40,15 @@ export function FlipBookViewer({
     null
   )
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set())
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
   const [currentZoom, setCurrentZoom] = useState(1)
   const [baseWidth, setBaseWidth] = useState(0)
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const retryCountRef = useRef<Map<number, number>>(new Map())
+  const MAX_RETRIES = 2
 
   const totalPages = pages.length
 
@@ -106,16 +109,40 @@ export function FlipBookViewer({
       }
     }
 
+    const timers: ReturnType<typeof setTimeout>[] = []
+
     pagesToPreload.forEach((pageIndex) => {
-      if (!loadedImages.has(pageIndex)) {
+      if (!loadedImages.has(pageIndex) && !failedImages.has(pageIndex)) {
         const img = new Image()
         img.onload = () => {
           setLoadedImages((prev) => new Set([...prev, pageIndex]))
+          retryCountRef.current.delete(pageIndex)
+        }
+        img.onerror = () => {
+          const attempts = retryCountRef.current.get(pageIndex) ?? 0
+          if (attempts < MAX_RETRIES) {
+            retryCountRef.current.set(pageIndex, attempts + 1)
+            const timerId = setTimeout(() => {
+              const url = pages[pageIndex]
+              if (!url) return
+              const retryImg = new Image()
+              retryImg.onload = img.onload
+              retryImg.onerror = img.onerror
+              retryImg.src = `${url}${url.includes('?') ? '&' : '?'}retry=${attempts + 1}`
+            }, 1000 * (attempts + 1))
+            timers.push(timerId)
+          } else {
+            setFailedImages((prev) => new Set([...prev, pageIndex]))
+          }
         }
         img.src = pages[pageIndex]
       }
     })
-  }, [currentSpread, pages, totalPages, totalSpreads, loadedImages])
+
+    return () => {
+      timers.forEach(clearTimeout)
+    }
+  }, [currentSpread, pages, totalPages, totalSpreads, loadedImages, failedImages])
 
   // Zoom helpers
   const clampZoom = useCallback(
@@ -282,6 +309,33 @@ export function FlipBookViewer({
   }
 
   const isPageLoaded = (index: number) => loadedImages.has(index)
+  const isPageFailed = (index: number) => failedImages.has(index)
+
+  const retryPage = useCallback((pageIndex: number) => {
+    setFailedImages((prev) => {
+      const next = new Set(prev)
+      next.delete(pageIndex)
+      return next
+    })
+    retryCountRef.current.delete(pageIndex)
+  }, [])
+
+  const renderFailedPage = (pageIndex: number) => (
+    <div className='w-full h-full flex flex-col items-center justify-center bg-gray-100 gap-2'>
+      <svg className='w-8 h-8 text-gray-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
+      </svg>
+      <button onClick={() => retryPage(pageIndex)} className='text-xs text-[#16a34a] hover:underline'>
+        Reintentar
+      </button>
+    </div>
+  )
+
+  const renderSpinner = () => (
+    <div className='w-full h-full flex items-center justify-center bg-gray-100'>
+      <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
+    </div>
+  )
 
   // Calculate next spread page indices for animation
   const nextSpread = currentSpread + 1
@@ -379,10 +433,10 @@ export function FlipBookViewer({
                               className='object-contain'
                               draggable={false}
                             />
+                          ) : isPageFailed(prevSpreadLeftIndex) ? (
+                            renderFailedPage(prevSpreadLeftIndex)
                           ) : (
-                            <div className='w-full h-full flex items-center justify-center bg-gray-100'>
-                              <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
-                            </div>
+                            renderSpinner()
                           )}
                         </div>
                       )}
@@ -407,10 +461,10 @@ export function FlipBookViewer({
                             className='object-contain'
                             draggable={false}
                           />
+                        ) : hasLeftPage && isPageFailed(leftPageIndex) ? (
+                          renderFailedPage(leftPageIndex)
                         ) : hasLeftPage ? (
-                          <div className='w-full h-full flex items-center justify-center bg-gray-100'>
-                            <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
-                          </div>
+                          renderSpinner()
                         ) : (
                           <div className='w-full h-full bg-transparent' />
                         )}
@@ -458,10 +512,10 @@ export function FlipBookViewer({
                             className='object-contain'
                             draggable={false}
                           />
+                        ) : isPageFailed(nextSpreadRightIndex) ? (
+                          renderFailedPage(nextSpreadRightIndex)
                         ) : (
-                          <div className='w-full h-full flex items-center justify-center bg-gray-100'>
-                            <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
-                          </div>
+                          renderSpinner()
                         )}
                       </div>
                     )}
@@ -481,10 +535,10 @@ export function FlipBookViewer({
                           className='object-contain'
                           draggable={false}
                         />
+                      ) : hasRightPage && isPageFailed(rightPageIndex) ? (
+                        renderFailedPage(rightPageIndex)
                       ) : hasRightPage ? (
-                        <div className='w-full h-full flex items-center justify-center bg-gray-100'>
-                          <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
-                        </div>
+                        renderSpinner()
                       ) : (
                         <div className='w-full h-full bg-transparent' />
                       )}
