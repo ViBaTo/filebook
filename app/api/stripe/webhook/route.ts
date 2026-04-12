@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getUserEmailRecipient } from '@/lib/email/recipients'
+import { buildAbsoluteUrl } from '@/lib/email/links'
+import { sendPaymentFailedEmail } from '@/lib/email/templates/payment-failed'
+import { sendSubscriptionActivatedEmail } from '@/lib/email/templates/subscription-activated'
+import { sendSubscriptionCanceledEmail } from '@/lib/email/templates/subscription-canceled'
 import { getStripe, PLANS, type PlanType } from '@/lib/stripe/config'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import Stripe from 'stripe'
-
-// Lazy-init supabase admin to avoid build-time errors
-function getSupabaseAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -86,6 +83,12 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     return
   }
 
+  const { data: existingSubscription } = await getSupabaseAdmin()
+    .from('fb_subscriptions')
+    .select('stripe_subscription_id, status, plan')
+    .eq('user_id', userId)
+    .maybeSingle()
+
   const planConfig = PLANS[plan]
 
   // Handle one-time payment (single flipbook purchase)
@@ -131,20 +134,42 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     advanced_analytics: planConfig.features.advancedAnalytics,
     password_protection: planConfig.features.passwordProtection
   })
+
+  const shouldSendActivationEmail =
+    existingSubscription?.stripe_subscription_id !== (session.subscription as string) ||
+    existingSubscription?.status !== 'active' ||
+    existingSubscription?.plan !== plan
+
+  if (!shouldSendActivationEmail) {
+    return
+  }
+
+  try {
+    const recipient = await getUserEmailRecipient(userId)
+
+    if (recipient) {
+      await sendSubscriptionActivatedEmail({
+        to: recipient.email,
+        name: recipient.name,
+        planName: planConfig.name,
+        manageUrl: buildAbsoluteUrl('/profile')
+      })
+    }
+  } catch (emailError) {
+    console.error('Failed to send subscription activated email:', emailError)
+  }
 }
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
-  const userId = subscription.metadata?.user_id
-
-  if (!userId) {
+  if (!subscription.metadata?.user_id) {
     // Try to find by customer ID
     const { data } = await getSupabaseAdmin()
       .from('fb_subscriptions')
       .select('user_id')
       .eq('stripe_subscription_id', subscription.id)
-      .single()
+      .maybeSingle()
 
-    if (!data) {
+    if (!data?.user_id) {
       console.error('Could not find user for subscription:', subscription.id)
       return
     }
@@ -184,7 +209,13 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   // Downgrade to free plan
-  await getSupabaseAdmin()
+  const { data: existingSubscription } = await getSupabaseAdmin()
+    .from('fb_subscriptions')
+    .select('user_id, status, plan')
+    .eq('stripe_subscription_id', subscription.id)
+    .maybeSingle()
+
+  const { data: updatedSubscription } = await getSupabaseAdmin()
     .from('fb_subscriptions')
     .update({
       plan: 'free',
@@ -200,6 +231,31 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       password_protection: false
     })
     .eq('stripe_subscription_id', subscription.id)
+    .select('user_id')
+    .maybeSingle()
+
+  const userId = subscription.metadata?.user_id || updatedSubscription?.user_id
+
+  if (
+    !userId ||
+    (existingSubscription?.status === 'canceled' && existingSubscription.plan === 'free')
+  ) {
+    return
+  }
+
+  try {
+    const recipient = await getUserEmailRecipient(userId)
+
+    if (recipient) {
+      await sendSubscriptionCanceledEmail({
+        to: recipient.email,
+        name: recipient.name,
+        reactivateUrl: buildAbsoluteUrl('/pricing')
+      })
+    }
+  } catch (emailError) {
+    console.error('Failed to send subscription canceled email:', emailError)
+  }
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
@@ -208,9 +264,41 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   const subscriptionId = invoiceAny.subscription as string | null
 
   if (subscriptionId) {
-    await getSupabaseAdmin()
+    const { data: existingSubscription } = await getSupabaseAdmin()
+      .from('fb_subscriptions')
+      .select('user_id, plan, status')
+      .eq('stripe_subscription_id', subscriptionId)
+      .maybeSingle()
+
+    const { data: updatedSubscription } = await getSupabaseAdmin()
       .from('fb_subscriptions')
       .update({ status: 'past_due' })
       .eq('stripe_subscription_id', subscriptionId)
+      .select('user_id, plan')
+      .maybeSingle()
+
+    const userId = updatedSubscription?.user_id
+
+    if (!userId || existingSubscription?.status === 'past_due') {
+      return
+    }
+
+    try {
+      const recipient = await getUserEmailRecipient(userId)
+
+      if (recipient) {
+        const planKey = (updatedSubscription.plan || 'free') as PlanType
+        const planName = PLANS[planKey]?.name || 'tu plan'
+
+        await sendPaymentFailedEmail({
+          to: recipient.email,
+          name: recipient.name,
+          planName,
+          manageUrl: buildAbsoluteUrl('/profile')
+        })
+      }
+    } catch (emailError) {
+      console.error('Failed to send payment failed email:', emailError)
+    }
   }
 }

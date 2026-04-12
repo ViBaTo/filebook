@@ -1,5 +1,6 @@
 'use client'
 
+import NextImage from 'next/image'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { FlipPage } from './FlipPage'
 import { FlipControls } from './FlipControls'
@@ -41,11 +42,11 @@ export function FlipBookViewer({
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set())
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
   const [currentZoom, setCurrentZoom] = useState(1)
+  const [baseWidth, setBaseWidth] = useState(0)
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const baseWidthRef = useRef(0)
   const retryCountRef = useRef<Map<number, number>>(new Map())
   const MAX_RETRIES = 2
 
@@ -71,7 +72,7 @@ export function FlipBookViewer({
   useEffect(() => {
     const measure = () => {
       if (containerRef.current && currentZoom <= 1) {
-        baseWidthRef.current = containerRef.current.offsetWidth
+        setBaseWidth(containerRef.current.offsetWidth)
       }
     }
     measure()
@@ -352,10 +353,7 @@ export function FlipBookViewer({
   // At zoom 1x: responsive (w-full max-w-7xl)
   // At zoom > 1x: explicit width = baseWidth * zoom (container grows, parent scrolls)
   const isZoomed = currentZoom > 1
-  const zoomedWidth =
-    isZoomed && baseWidthRef.current > 0
-      ? baseWidthRef.current * currentZoom
-      : undefined
+  const zoomedWidth = isZoomed && baseWidth > 0 ? baseWidth * currentZoom : undefined
 
   return (
     <div className={`relative w-full h-full flex flex-col ${className}`}>
@@ -369,7 +367,7 @@ export function FlipBookViewer({
           )}
           {ownerName && (
             <div className='flex items-center justify-center gap-1.5'>
-              <div className='w-4 h-4 rounded-full bg-gradient-to-br from-[#166534] to-[#14532d] flex items-center justify-center text-white text-[9px] font-semibold shrink-0'>
+              <div className='w-4 h-4 rounded-full bg-linear-to-br from-[#166534] to-[#14532d] flex items-center justify-center text-white text-[9px] font-semibold shrink-0'>
                 {ownerName.charAt(0).toUpperCase()}
               </div>
               <span className='text-xs text-gray-400'>
@@ -426,10 +424,13 @@ export function FlipBookViewer({
                       prevSpreadLeftIndex < totalPages && (
                         <div className='absolute inset-0 bg-transparent overflow-hidden'>
                           {isPageLoaded(prevSpreadLeftIndex) ? (
-                            <img
+                            <NextImage
                               src={pages[prevSpreadLeftIndex]}
                               alt={`Page ${prevSpreadLeftIndex + 1}`}
-                              className='w-full h-full object-contain'
+                              fill
+                              sizes='50vw'
+                              unoptimized
+                              className='object-contain'
                               draggable={false}
                             />
                           ) : isPageFailed(prevSpreadLeftIndex) ? (
@@ -451,10 +452,13 @@ export function FlipBookViewer({
                     {flipDirection !== 'prev' && (
                       <div className='absolute inset-0 bg-transparent overflow-hidden'>
                         {hasLeftPage && isPageLoaded(leftPageIndex) ? (
-                          <img
+                          <NextImage
                             src={pages[leftPageIndex]}
                             alt={`Page ${leftPageIndex + 1}`}
-                            className='w-full h-full object-contain'
+                            fill
+                            sizes='50vw'
+                            unoptimized
+                            className='object-contain'
                             draggable={false}
                           />
                         ) : hasLeftPage && isPageFailed(leftPageIndex) ? (
@@ -499,10 +503,13 @@ export function FlipBookViewer({
                     nextSpreadRightIndex < totalPages && (
                       <div className='absolute inset-0 bg-transparent overflow-hidden'>
                         {isPageLoaded(nextSpreadRightIndex) ? (
-                          <img
+                          <NextImage
                             src={pages[nextSpreadRightIndex]}
                             alt={`Page ${nextSpreadRightIndex + 1}`}
-                            className='w-full h-full object-contain'
+                            fill
+                            sizes='50vw'
+                            unoptimized
+                            className='object-contain'
                             draggable={false}
                           />
                         ) : isPageFailed(nextSpreadRightIndex) ? (
@@ -519,10 +526,13 @@ export function FlipBookViewer({
                       className={`${isCoverSpread ? 'relative w-1/2 h-full' : 'absolute inset-0'} bg-transparent overflow-hidden`}
                     >
                       {hasRightPage && isPageLoaded(rightPageIndex) ? (
-                        <img
+                        <NextImage
                           src={pages[rightPageIndex]}
                           alt={`Page ${rightPageIndex + 1}`}
-                          className='w-full h-full object-contain'
+                          fill
+                          sizes='50vw'
+                          unoptimized
+                          className='object-contain'
                           draggable={false}
                         />
                       ) : hasRightPage && isPageFailed(rightPageIndex) ? (

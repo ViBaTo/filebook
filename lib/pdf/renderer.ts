@@ -103,7 +103,6 @@ export async function renderPDFToImages(
     const viewport = page.getViewport({ scale })
 
     let finalCanvas: HTMLCanvasElement | null = null
-    let finalContext: CanvasRenderingContext2D | null = null
 
     for (const strategy of renderStrategies) {
       // Create canvas
@@ -128,8 +127,6 @@ export async function renderPDFToImages(
       await page.render(renderParams as Parameters<typeof page.render>[0]).promise
 
       finalCanvas = canvas
-      finalContext = context
-
       // Check if the canvas has content (not blank)
       if (!isCanvasBlank(context, canvas.width, canvas.height)) {
         break // This strategy produced content, use it

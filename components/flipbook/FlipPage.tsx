@@ -1,5 +1,7 @@
 'use client'
 
+import NextImage from 'next/image'
+
 interface FlipPageProps {
   direction: 'next' | 'prev'
   progress: number // 0 to 1
@@ -42,9 +44,6 @@ export function FlipPage({
       ? `linear-gradient(to right, rgba(0,0,0,${shadowIntensity * 0.3}) 0%, transparent 50%)`
       : `linear-gradient(to left, rgba(0,0,0,${shadowIntensity * 0.3}) 0%, transparent 50%)`
 
-  // Page edge position
-  const edgePosition = direction === 'next' ? 'right-0' : 'left-0'
-
   return (
     <div
       className='absolute inset-0'
@@ -57,16 +56,19 @@ export function FlipPage({
     >
       {/* Front face - current page content */}
       <div
-        className={`absolute inset-0 ${frontRounding} overflow-hidden bg-transparent`}
+        className={`absolute inset-0 ${frontRounding} relative overflow-hidden bg-transparent`}
         style={{
           backfaceVisibility: 'hidden'
         }}
       >
         {isLoaded && frontImage ? (
-          <img
+          <NextImage
             src={frontImage}
             alt='Page front'
-            className='w-full h-full object-contain'
+            fill
+            sizes='50vw'
+            unoptimized
+            className='object-contain'
             draggable={false}
           />
         ) : (
@@ -85,17 +87,20 @@ export function FlipPage({
 
       {/* Back face - other page content */}
       <div
-        className={`absolute inset-0 ${backRounding} overflow-hidden bg-transparent`}
+        className={`absolute inset-0 ${backRounding} relative overflow-hidden bg-transparent`}
         style={{
           backfaceVisibility: 'hidden',
           transform: 'rotateY(180deg)'
         }}
       >
         {backImage ? (
-          <img
+          <NextImage
             src={backImage}
             alt='Page back'
-            className='w-full h-full object-contain'
+            fill
+            sizes='50vw'
+            unoptimized
+            className='object-contain'
             draggable={false}
           />
         ) : (

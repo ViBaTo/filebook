@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { FlipBookViewerWrapper } from './FlipBookViewerWrapper'
@@ -87,11 +88,11 @@ export default async function ViewPage({ params }: PageProps) {
   const owner = await getBookOwner(book.user_id)
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-[#1C1917] via-[#292524] to-[#1C1917]'>
+    <div className='min-h-screen bg-linear-to-br from-[#1C1917] via-[#292524] to-[#1C1917]'>
       {/* Header */}
       <header className='absolute top-0 left-0 right-0 z-50 p-4 flex items-center justify-between'>
         <div className='flex items-center gap-3'>
-          <a
+          <Link
             href='/'
             className='text-white/70 hover:text-white transition-colors'
           >
@@ -103,7 +104,7 @@ export default async function ViewPage({ params }: PageProps) {
                 fill='none'
               />
             </svg>
-          </a>
+          </Link>
         </div>
 
         <div className='flex items-center gap-2'>
