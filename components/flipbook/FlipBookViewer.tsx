@@ -39,12 +39,15 @@ export function FlipBookViewer({
     null
   )
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set())
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
   const [currentZoom, setCurrentZoom] = useState(1)
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const baseWidthRef = useRef(0)
+  const retryCountRef = useRef<Map<number, number>>(new Map())
+  const MAX_RETRIES = 2
 
   const totalPages = pages.length
 
@@ -106,15 +109,30 @@ export function FlipBookViewer({
     }
 
     pagesToPreload.forEach((pageIndex) => {
-      if (!loadedImages.has(pageIndex)) {
+      if (!loadedImages.has(pageIndex) && !failedImages.has(pageIndex)) {
         const img = new Image()
         img.onload = () => {
           setLoadedImages((prev) => new Set([...prev, pageIndex]))
+          retryCountRef.current.delete(pageIndex)
+        }
+        img.onerror = () => {
+          const attempts = retryCountRef.current.get(pageIndex) ?? 0
+          if (attempts < MAX_RETRIES) {
+            retryCountRef.current.set(pageIndex, attempts + 1)
+            setTimeout(() => {
+              const retryImg = new Image()
+              retryImg.onload = img.onload
+              retryImg.onerror = img.onerror
+              retryImg.src = `${pages[pageIndex]}${pages[pageIndex].includes('?') ? '&' : '?'}retry=${attempts + 1}`
+            }, 1000 * (attempts + 1))
+          } else {
+            setFailedImages((prev) => new Set([...prev, pageIndex]))
+          }
         }
         img.src = pages[pageIndex]
       }
     })
-  }, [currentSpread, pages, totalPages, totalSpreads, loadedImages])
+  }, [currentSpread, pages, totalPages, totalSpreads, loadedImages, failedImages])
 
   // Zoom helpers
   const clampZoom = useCallback(
@@ -281,6 +299,16 @@ export function FlipBookViewer({
   }
 
   const isPageLoaded = (index: number) => loadedImages.has(index)
+  const isPageFailed = (index: number) => failedImages.has(index)
+
+  const retryPage = useCallback((pageIndex: number) => {
+    setFailedImages((prev) => {
+      const next = new Set(prev)
+      next.delete(pageIndex)
+      return next
+    })
+    retryCountRef.current.delete(pageIndex)
+  }, [])
 
   // Calculate next spread page indices for animation
   const nextSpread = currentSpread + 1
@@ -378,6 +406,15 @@ export function FlipBookViewer({
                               className='w-full h-full object-contain'
                               draggable={false}
                             />
+                          ) : isPageFailed(prevSpreadLeftIndex) ? (
+                            <div className='w-full h-full flex flex-col items-center justify-center bg-gray-100 gap-2'>
+                              <svg className='w-8 h-8 text-gray-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
+                              </svg>
+                              <button onClick={() => retryPage(prevSpreadLeftIndex)} className='text-xs text-[#16a34a] hover:underline'>
+                                Reintentar
+                              </button>
+                            </div>
                           ) : (
                             <div className='w-full h-full flex items-center justify-center bg-gray-100'>
                               <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
@@ -403,6 +440,15 @@ export function FlipBookViewer({
                             className='w-full h-full object-contain'
                             draggable={false}
                           />
+                        ) : hasLeftPage && isPageFailed(leftPageIndex) ? (
+                          <div className='w-full h-full flex flex-col items-center justify-center bg-gray-100 gap-2'>
+                            <svg className='w-8 h-8 text-gray-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
+                            </svg>
+                            <button onClick={() => retryPage(leftPageIndex)} className='text-xs text-[#16a34a] hover:underline'>
+                              Reintentar
+                            </button>
+                          </div>
                         ) : hasLeftPage ? (
                           <div className='w-full h-full flex items-center justify-center bg-gray-100'>
                             <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
@@ -451,6 +497,15 @@ export function FlipBookViewer({
                             className='w-full h-full object-contain'
                             draggable={false}
                           />
+                        ) : isPageFailed(nextSpreadRightIndex) ? (
+                          <div className='w-full h-full flex flex-col items-center justify-center bg-gray-100 gap-2'>
+                            <svg className='w-8 h-8 text-gray-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
+                            </svg>
+                            <button onClick={() => retryPage(nextSpreadRightIndex)} className='text-xs text-[#16a34a] hover:underline'>
+                              Reintentar
+                            </button>
+                          </div>
                         ) : (
                           <div className='w-full h-full flex items-center justify-center bg-gray-100'>
                             <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
@@ -471,6 +526,15 @@ export function FlipBookViewer({
                           className='w-full h-full object-contain'
                           draggable={false}
                         />
+                      ) : hasRightPage && isPageFailed(rightPageIndex) ? (
+                        <div className='w-full h-full flex flex-col items-center justify-center bg-gray-100 gap-2'>
+                          <svg className='w-8 h-8 text-gray-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
+                          </svg>
+                          <button onClick={() => retryPage(rightPageIndex)} className='text-xs text-[#16a34a] hover:underline'>
+                            Reintentar
+                          </button>
+                        </div>
                       ) : hasRightPage ? (
                         <div className='w-full h-full flex items-center justify-center bg-gray-100'>
                           <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
