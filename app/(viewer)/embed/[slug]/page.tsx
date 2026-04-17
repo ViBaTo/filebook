@@ -17,7 +17,6 @@ async function getBook(slug: string) {
     .select('*')
     .eq('slug', slug)
     .eq('is_public', true)
-    .eq('status', 'ready')
     .single()
 
   if (error || !book) {
@@ -53,10 +52,21 @@ export default async function EmbedPage({ params }: PageProps) {
     notFound()
   }
 
+  if (book.status !== 'ready') {
+    const isError = book.status === 'error'
+    return (
+      <div className='h-screen w-screen bg-[#1C1917] flex items-center justify-center text-white/70 text-sm px-6 text-center'>
+        {isError
+          ? 'Este FlipBook no se pudo generar.'
+          : 'Este FlipBook se está generando…'}
+      </div>
+    )
+  }
+
   const pagesUrls = (book.pages_urls as string[]) || []
 
   return (
-    <div className='h-screen w-screen bg-gradient-to-br from-[#1C1917] via-[#292524] to-[#1C1917] overflow-hidden'>
+    <div className='h-screen w-screen bg-linear-to-br from-[#1C1917] via-[#292524] to-[#1C1917] overflow-hidden'>
       <EmbedViewerWrapper
         bookId={book.id}
         pages={pagesUrls}
