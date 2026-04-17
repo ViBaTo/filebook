@@ -31,8 +31,11 @@ export function FlipBookViewer({
   onPageChange,
   className = '',
   ownerName,
-  pageAspectRatio = 1 / 1.414
+  pageAspectRatio: pageAspectRatioProp
 }: FlipBookViewerProps) {
+  const [detectedRatio, setDetectedRatio] = useState<number | null>(null)
+  // Fallback to A4 portrait until we detect the real ratio from an image.
+  const pageAspectRatio = pageAspectRatioProp ?? detectedRatio ?? 1 / 1.414
   // currentSpread tracks which two-page spread we're viewing
   // Spread 0 = cover only, Spread 1 = pages 1-2, etc.
   const [currentSpread, setCurrentSpread] = useState(0)
@@ -86,8 +89,9 @@ export function FlipBookViewer({
   const totalSpreads =
     pagesPerSpread === 1 ? totalPages : 1 + Math.ceil((totalPages - 1) / 2)
 
-  // Clamp currentSpread if layout changes (e.g. rotate)
+  // Clamp currentSpread if layout changes (e.g. rotate, single-page toggle).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentSpread((prev) => Math.min(prev, Math.max(0, totalSpreads - 1)))
   }, [totalSpreads])
 
@@ -143,22 +147,28 @@ export function FlipBookViewer({
 
     const timers: ReturnType<typeof setTimeout>[] = []
     const createdImages: HTMLImageElement[] = []
+    const claimedIndices: number[] = []
+    const loadingSet = loadingImagesRef.current
     let cancelled = false
 
     pagesToPreload.forEach((pageIndex) => {
       if (
         loadedImages.has(pageIndex) ||
         failedImages.has(pageIndex) ||
-        loadingImagesRef.current.has(pageIndex)
+        loadingSet.has(pageIndex)
       ) return
 
-      loadingImagesRef.current.add(pageIndex)
+      loadingSet.add(pageIndex)
+      claimedIndices.push(pageIndex)
       const img = new Image()
       createdImages.push(img)
 
       const onLoad = () => {
         if (cancelled) return
-        loadingImagesRef.current.delete(pageIndex)
+        loadingSet.delete(pageIndex)
+        if (!pageAspectRatioProp && img.naturalWidth > 0 && img.naturalHeight > 0) {
+          setDetectedRatio((prev) => prev ?? img.naturalWidth / img.naturalHeight)
+        }
         setLoadedImages((prev) => {
           if (prev.has(pageIndex)) return prev
           const next = new Set(prev)
@@ -185,7 +195,7 @@ export function FlipBookViewer({
           }, 1000 * (attempts + 1))
           timers.push(timerId)
         } else {
-          loadingImagesRef.current.delete(pageIndex)
+          loadingSet.delete(pageIndex)
           setFailedImages((prev) => {
             if (prev.has(pageIndex)) return prev
             const next = new Set(prev)
@@ -207,8 +217,12 @@ export function FlipBookViewer({
         img.onload = null
         img.onerror = null
       })
+      // Release pending reservations so the next effect run (e.g. StrictMode
+      // double-invocation) can re-issue the load. Pages already marked as
+      // loaded/failed were removed by their handlers before cancel.
+      claimedIndices.forEach((idx) => loadingSet.delete(idx))
     }
-  }, [currentSpread, pages, totalPages, totalSpreads, loadedImages, failedImages])
+  }, [currentSpread, pages, totalPages, totalSpreads, loadedImages, failedImages, pageAspectRatioProp])
 
   // Zoom helpers
   const clampZoom = useCallback(
