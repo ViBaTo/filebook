@@ -70,7 +70,8 @@ export function FlipControls({
         onClick={onPrev}
         disabled={!canGoPrev || isAnimating}
         className={`
-          p-3 rounded-full transition-all duration-200
+          min-w-[44px] min-h-[44px] p-3 rounded-full transition-all duration-200
+          flex items-center justify-center
           ${
             canGoPrev && !isAnimating
               ? 'bg-white/10 hover:bg-white/20 text-white'
@@ -153,7 +154,8 @@ export function FlipControls({
         onClick={onNext}
         disabled={!canGoNext || isAnimating}
         className={`
-          p-3 rounded-full transition-all duration-200
+          min-w-[44px] min-h-[44px] p-3 rounded-full transition-all duration-200
+          flex items-center justify-center
           ${
             canGoNext && !isAnimating
               ? 'bg-white/10 hover:bg-white/20 text-white'
@@ -177,8 +179,8 @@ export function FlipControls({
         </svg>
       </button>
 
-      {/* Zoom controls separator */}
-      {onZoomIn && (
+      {/* Zoom controls separator — hidden on mobile (pinch/double-tap) */}
+      {onZoomIn && !isMobile && (
         <>
           <div className='w-px h-6 bg-white/20' />
 
