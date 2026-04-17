@@ -109,8 +109,14 @@ export default function CreatePage() {
           onUploadProgress
         )
 
+        const firstPage = renderedPages[0]
+        const pageAspectRatio =
+          firstPage && firstPage.height > 0
+            ? firstPage.width / firstPage.height
+            : undefined
+
         // Update book with pages
-        await updateBookWithPages(bookId, pagesUrls, renderedPages.length)
+        await updateBookWithPages(bookId, pagesUrls, renderedPages.length, pageAspectRatio)
 
         // Get the book info
         const { data: book } = await supabase
