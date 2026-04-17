@@ -785,15 +785,15 @@ export function FlipBookViewer({
   )
 
   const chromeHeightPx =
-    (title || ownerName ? 48 : 0) + (showControls ? 64 : 0) + 8
+    ((title || ownerName) && !isMobile ? 48 : 0) + (showControls ? 64 : 0) + 8
 
   return (
     <div
       className={`relative w-full h-full flex flex-col ${className}`}
       style={{ ['--viewer-chrome-height' as string]: `${chromeHeightPx}px` }}
     >
-      {/* Title & Owner */}
-      {(title || ownerName) && (
+      {/* Title & Owner — hidden on mobile (page header already shows branding) */}
+      {(title || ownerName) && !isMobile && (
         <div
           className={`text-center py-2 shrink-0 transition-opacity duration-300 ${chromeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
