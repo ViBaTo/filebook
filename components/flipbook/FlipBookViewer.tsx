@@ -4,6 +4,7 @@ import NextImage from 'next/image'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { FlipPage } from './FlipPage'
 import { FlipControls } from './FlipControls'
+import { TapZones } from './TapZones'
 
 interface FlipBookViewerProps {
   pages: string[]
@@ -63,6 +64,8 @@ export function FlipBookViewer({
 
   const [transitionEnabled, setTransitionEnabled] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [chromeVisible, setChromeVisible] = useState(true)
+  const toggleChrome = useCallback(() => setChromeVisible((v) => !v), [])
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
   useEffect(() => {
@@ -825,7 +828,15 @@ export function FlipBookViewer({
                 onDoubleClick={handleDoubleClick}
                 onTransitionEnd={() => setTransitionEnabled(false)}
               >
-                {bookInner}
+                <div className='relative w-full h-full'>
+                  {bookInner}
+                  <TapZones
+                    onPrev={goToPrev}
+                    onNext={goToNext}
+                    onToggleChrome={toggleChrome}
+                    enabled={!isZoomed}
+                  />
+                </div>
               </div>
             </div>
           ) : (
@@ -843,7 +854,15 @@ export function FlipBookViewer({
               onTouchEnd={handleTouchEnd}
               onDoubleClick={handleDoubleClick}
             >
-              {bookInner}
+              <div className='relative w-full h-full'>
+                {bookInner}
+                <TapZones
+                  onPrev={goToPrev}
+                  onNext={goToNext}
+                  onToggleChrome={toggleChrome}
+                  enabled={!isZoomed}
+                />
+              </div>
             </div>
           )}
         </div>
