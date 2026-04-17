@@ -4,6 +4,7 @@ interface FlipControlsProps {
   currentSpread: number
   totalPages: number
   totalSpreads: number
+  pagesPerSpread?: number
   onPrev: () => void
   onNext: () => void
   onJumpToSpread?: (target: number) => void
@@ -18,6 +19,7 @@ export function FlipControls({
   currentSpread,
   totalPages,
   totalSpreads,
+  pagesPerSpread = 2,
   onPrev,
   onNext,
   onJumpToSpread,
@@ -30,13 +32,21 @@ export function FlipControls({
   const canGoPrev = currentSpread > 0
   const canGoNext = currentSpread < totalSpreads - 1
 
-  // Calculate the page numbers for the current spread
-  // Spread 0 = cover (page 1)
-  // Spread 1 = pages 2-3
-  // Spread N = pages (N*2), (N*2+1)
-  const isCoverSpread = currentSpread === 0
-  const leftPageNum = isCoverSpread ? -1 : (currentSpread - 1) * 2 + 2
-  const rightPageNum = isCoverSpread ? 1 : (currentSpread - 1) * 2 + 3
+  // Calculate the page numbers for the current spread.
+  // Two-page mode: spread 0 = cover (page 1); spread N = pages (N*2), (N*2+1).
+  // Single-page mode: spread index equals page index (0-based).
+  const isSinglePage = pagesPerSpread === 1
+  const isCoverSpread = !isSinglePage && currentSpread === 0
+  const leftPageNum = isSinglePage
+    ? -1
+    : isCoverSpread
+      ? -1
+      : (currentSpread - 1) * 2 + 2
+  const rightPageNum = isSinglePage
+    ? currentSpread + 1
+    : isCoverSpread
+      ? 1
+      : (currentSpread - 1) * 2 + 3
   const hasLeftPage = leftPageNum > 0 && leftPageNum <= totalPages
   const hasRightPage = rightPageNum <= totalPages
 
@@ -96,6 +106,7 @@ export function FlipControls({
             currentSpread={currentSpread}
             totalSpreads={totalSpreads}
             totalPages={totalPages}
+            pagesPerSpread={pagesPerSpread}
             onJumpToSpread={onJumpToSpread}
           />
         )}
@@ -242,13 +253,22 @@ function PageJumpInput({
   currentSpread,
   totalSpreads,
   totalPages,
+  pagesPerSpread,
   onJumpToSpread
 }: {
   currentSpread: number
   totalSpreads: number
   totalPages: number
+  pagesPerSpread: number
   onJumpToSpread?: (target: number) => void
 }) {
+  const pageToSpread = (page: number) => {
+    // Single-page mode: spread index = page index (0-based). page 1 -> spread 0.
+    if (pagesPerSpread === 1) return page - 1
+    // Two-page mode: cover holds page 1, subsequent spreads hold 2 pages.
+    return page <= 1 ? 0 : Math.ceil((page - 1) / 2)
+  }
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const form = e.currentTarget
@@ -256,16 +276,21 @@ function PageJumpInput({
     const n = parseInt(input.value, 10)
     if (!Number.isFinite(n) || n < 1) return
     const page = Math.min(totalPages, n)
-    const targetSpread = page <= 1 ? 0 : Math.ceil((page - 1) / 2)
-    onJumpToSpread?.(Math.min(totalSpreads - 1, targetSpread))
+    const targetSpread = pageToSpread(page)
+    onJumpToSpread?.(Math.max(0, Math.min(totalSpreads - 1, targetSpread)))
     input.blur()
   }
 
-  const coverPage = currentSpread === 0 ? 1 : (currentSpread - 1) * 2 + 2
+  const coverPage =
+    pagesPerSpread === 1
+      ? currentSpread + 1
+      : currentSpread === 0
+        ? 1
+        : (currentSpread - 1) * 2 + 2
 
   return (
     <form onSubmit={handleSubmit} className='flex items-center gap-2'>
-      <label className='sr-only' htmlFor='page-jump'>Go to page</label>
+      <label className='sr-only' htmlFor='page-jump'>Ir a la página</label>
       <input
         id='page-jump'
         name='page'

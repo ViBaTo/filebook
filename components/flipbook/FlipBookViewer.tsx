@@ -90,10 +90,16 @@ export function FlipBookViewer({
     pagesPerSpread === 1 ? totalPages : 1 + Math.ceil((totalPages - 1) / 2)
 
   // Clamp currentSpread if layout changes (e.g. rotate, single-page toggle).
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCurrentSpread((prev) => Math.min(prev, Math.max(0, totalSpreads - 1)))
-  }, [totalSpreads])
+  // Uses the "adjusting state while rendering" pattern so we avoid the
+  // set-state-in-effect anti-pattern.
+  // See https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const [prevTotalSpreads, setPrevTotalSpreads] = useState(totalSpreads)
+  if (totalSpreads !== prevTotalSpreads) {
+    setPrevTotalSpreads(totalSpreads)
+    if (currentSpread > totalSpreads - 1) {
+      setCurrentSpread(Math.max(0, totalSpreads - 1))
+    }
+  }
 
   const isCoverSpread = pagesPerSpread === 2 && currentSpread === 0
 
@@ -838,6 +844,7 @@ export function FlipBookViewer({
           currentSpread={currentSpread}
           totalPages={totalPages}
           totalSpreads={totalSpreads}
+          pagesPerSpread={pagesPerSpread}
           onPrev={goToPrev}
           onNext={goToNext}
           onJumpToSpread={jumpToSpread}
