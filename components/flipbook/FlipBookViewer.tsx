@@ -69,9 +69,9 @@ export function FlipBookViewer({
   const showChromeBriefly = useCallback(() => setChromeVisible(true), [])
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
-  // Single-page vs two-page mode. If the shortest viewport dimension is
-  // below 500 px, use single-page — covers portrait phones, landscape
-  // phones (low height), and keeps two-page on tablets/desktops.
+  // Mobile-detect is only used for CHROME (footer/header) adaptations —
+  // layout stays as a two-page spread on every screen so the flip-book
+  // feel is preserved. Small screens just scale the whole spread down.
   useEffect(() => {
     if (typeof window === 'undefined') return
     const compute = () => {
@@ -98,9 +98,9 @@ export function FlipBookViewer({
 
   const totalPages = pages.length
 
-  const pagesPerSpread = isMobile ? 1 : 2
-  const totalSpreads =
-    pagesPerSpread === 1 ? totalPages : 1 + Math.ceil((totalPages - 1) / 2)
+  // Always two-page spread — the book-flip experience is the product.
+  const pagesPerSpread: number = 2
+  const totalSpreads = 1 + Math.ceil((totalPages - 1) / 2)
 
   // Clamp currentSpread if layout changes (e.g. rotate, single-page toggle).
   // Uses the "adjusting state while rendering" pattern so we avoid the
