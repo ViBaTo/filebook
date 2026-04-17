@@ -313,6 +313,20 @@ export function FlipBookViewer({
   const goToNext = useCallback(() => goToSpread('next'), [goToSpread])
   const goToPrev = useCallback(() => goToSpread('prev'), [goToSpread])
 
+  const jumpToSpread = useCallback(
+    (target: number) => {
+      if (isAnimating) return
+      const clamped = Math.max(0, Math.min(totalSpreads - 1, target))
+      if (clamped === currentSpread) return
+      currentZoomRef.current = 1
+      setCurrentZoom(1)
+      setCurrentSpread(clamped)
+      const newLeftPageIndex = clamped === 0 ? 0 : (clamped - 1) * 2 + 1
+      onPageChange?.(newLeftPageIndex)
+    },
+    [isAnimating, totalSpreads, currentSpread, onPageChange]
+  )
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -738,6 +752,7 @@ export function FlipBookViewer({
           totalSpreads={totalSpreads}
           onPrev={goToPrev}
           onNext={goToNext}
+          onJumpToSpread={jumpToSpread}
           isAnimating={isAnimating}
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}

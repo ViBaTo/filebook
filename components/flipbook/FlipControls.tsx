@@ -6,6 +6,7 @@ interface FlipControlsProps {
   totalSpreads: number
   onPrev: () => void
   onNext: () => void
+  onJumpToSpread?: (target: number) => void
   isAnimating: boolean
   onZoomIn?: () => void
   onZoomOut?: () => void
@@ -19,6 +20,7 @@ export function FlipControls({
   totalSpreads,
   onPrev,
   onNext,
+  onJumpToSpread,
   isAnimating,
   onZoomIn,
   onZoomOut,
@@ -73,23 +75,29 @@ export function FlipControls({
 
       {/* Page indicator */}
       <div className='flex items-center gap-4'>
-        {/* Spread dots for small books (based on spreads, not pages) */}
-        {totalSpreads <= 10 && (
+        {totalSpreads <= 10 ? (
           <div className='flex items-center gap-1.5'>
             {Array.from({ length: totalSpreads }).map((_, i) => (
-              <div
+              <button
                 key={i}
+                onClick={() => onJumpToSpread?.(i)}
+                aria-label={`Go to spread ${i + 1}`}
                 className={`
                   w-2 h-2 rounded-full transition-all duration-300
-                  ${
-                    i === currentSpread
-                      ? 'bg-[#16a34a] scale-125'
-                      : 'bg-white/30 hover:bg-white/50'
-                  }
+                  ${i === currentSpread
+                    ? 'bg-[#16a34a] scale-125'
+                    : 'bg-white/30 hover:bg-white/50'}
                 `}
               />
             ))}
           </div>
+        ) : (
+          <PageJumpInput
+            currentSpread={currentSpread}
+            totalSpreads={totalSpreads}
+            totalPages={totalPages}
+            onJumpToSpread={onJumpToSpread}
+          />
         )}
 
         {/* Page counter - show current spread's page range */}
@@ -227,5 +235,53 @@ export function FlipControls({
         </>
       )}
     </div>
+  )
+}
+
+function PageJumpInput({
+  currentSpread,
+  totalSpreads,
+  totalPages,
+  onJumpToSpread
+}: {
+  currentSpread: number
+  totalSpreads: number
+  totalPages: number
+  onJumpToSpread?: (target: number) => void
+}) {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const form = e.currentTarget
+    const input = form.elements.namedItem('page') as HTMLInputElement
+    const n = parseInt(input.value, 10)
+    if (!Number.isFinite(n) || n < 1) return
+    const page = Math.min(totalPages, n)
+    const targetSpread = page <= 1 ? 0 : Math.ceil((page - 1) / 2)
+    onJumpToSpread?.(Math.min(totalSpreads - 1, targetSpread))
+    input.blur()
+  }
+
+  const coverPage = currentSpread === 0 ? 1 : (currentSpread - 1) * 2 + 2
+
+  return (
+    <form onSubmit={handleSubmit} className='flex items-center gap-2'>
+      <label className='sr-only' htmlFor='page-jump'>Go to page</label>
+      <input
+        id='page-jump'
+        name='page'
+        type='number'
+        min={1}
+        max={totalPages}
+        defaultValue={coverPage}
+        key={currentSpread}
+        className='w-14 px-2 py-1 text-sm bg-white/10 border border-white/20 rounded text-white text-center focus:outline-none focus:border-[#16a34a]'
+      />
+      <button
+        type='submit'
+        className='text-xs text-white/70 hover:text-white transition-colors'
+      >
+        Ir
+      </button>
+    </form>
   )
 }
