@@ -317,28 +317,18 @@ export function FlipBookViewer({
         container.scrollTop = 0
       }
 
-      if (prefersReducedMotion) {
-        const newSpread =
-          direction === 'next' ? currentSpread + 1 : currentSpread - 1
-        setCurrentSpread(newSpread)
-        const reportedPage =
-          pagesPerSpread === 1
-            ? newSpread
-            : newSpread === 0
-              ? 0
-              : (newSpread - 1) * 2 + 1
-        onPageChange?.(reportedPage)
-        return
-      }
-
       setIsAnimating(true)
       setFlipDirection(direction)
+
+      // Shorter animation when the user prefers reduced motion, but still
+      // keep the page-flip — it's the product's signature interaction.
+      const duration = prefersReducedMotion ? 200 : FLIP_DURATION
 
       let start: number | null = null
       const animate = (timestamp: number) => {
         if (!start) start = timestamp
         const elapsed = timestamp - start
-        const progress = Math.min(elapsed / FLIP_DURATION, 1)
+        const progress = Math.min(elapsed / duration, 1)
         // Ease-out cubic
         const eased = 1 - Math.pow(1 - progress, 3)
         setFlipProgress(eased)
