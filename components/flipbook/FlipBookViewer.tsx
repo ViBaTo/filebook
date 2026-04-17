@@ -375,15 +375,32 @@ export function FlipBookViewer({
     [isAnimating, totalSpreads, currentSpread, onPageChange, pagesPerSpread]
   )
 
-  // Keyboard navigation
+  // Keyboard navigation. Skip when typing in inputs; only hijack Space if the
+  // viewer is currently visible (so it doesn't break scroll on host pages).
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' || e.key === ' ') {
+      const target = e.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) return
+
+      if (e.key === 'ArrowRight') {
         e.preventDefault()
         goToNext()
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault()
         goToPrev()
+      } else if (e.key === ' ') {
+        const container = containerRef.current
+        if (!container) return
+        const rect = container.getBoundingClientRect()
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          e.preventDefault()
+          goToNext()
+        }
       }
     }
 
