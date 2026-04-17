@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Instrument_Serif } from 'next/font/google'
 import './globals.css'
 
@@ -9,6 +9,13 @@ const instrumentSerif = Instrument_Serif({
   style: ['normal', 'italic'],
   display: 'swap'
 })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#1C1917'
+}
 
 export const metadata: Metadata = {
   title: 'FlipBook by VIBATO — Tus documentos, convertidos en experiencias',

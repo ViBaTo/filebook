@@ -1,13 +1,17 @@
 'use client'
 
+import { ProgressScrubber } from './ProgressScrubber'
+
 interface FlipControlsProps {
   currentSpread: number
   totalPages: number
   totalSpreads: number
   pagesPerSpread?: number
+  isMobile?: boolean
   onPrev: () => void
   onNext: () => void
   onJumpToSpread?: (target: number) => void
+  onDragActivity?: () => void
   isAnimating: boolean
   onZoomIn?: () => void
   onZoomOut?: () => void
@@ -20,9 +24,11 @@ export function FlipControls({
   totalPages,
   totalSpreads,
   pagesPerSpread = 2,
+  isMobile = false,
   onPrev,
   onNext,
   onJumpToSpread,
+  onDragActivity,
   isAnimating,
   onZoomIn,
   onZoomOut,
@@ -53,13 +59,21 @@ export function FlipControls({
   const isZoomed = currentZoom > 1.05
 
   return (
-    <div className='flex items-center justify-center gap-6 py-4'>
+    <div
+      className={`flex items-center ${isMobile ? 'justify-between px-3 py-3 gap-2' : 'justify-center gap-6 py-4'}`}
+      style={
+        isMobile
+          ? { paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)' }
+          : undefined
+      }
+    >
       {/* Previous button */}
       <button
         onClick={onPrev}
         disabled={!canGoPrev || isAnimating}
         className={`
-          p-3 rounded-full transition-all duration-200
+          min-w-[44px] min-h-[44px] p-3 rounded-full transition-all duration-200
+          flex items-center justify-center
           ${
             canGoPrev && !isAnimating
               ? 'bg-white/10 hover:bg-white/20 text-white'
@@ -84,8 +98,18 @@ export function FlipControls({
       </button>
 
       {/* Page indicator */}
-      <div className='flex items-center gap-4'>
-        {totalSpreads <= 10 ? (
+      <div className={`flex items-center ${isMobile ? 'flex-1 min-w-0 gap-2' : 'gap-4'}`}>
+        {isMobile ? (
+          onJumpToSpread && (
+            <ProgressScrubber
+              currentSpread={currentSpread}
+              totalSpreads={totalSpreads}
+              totalPages={totalPages}
+              onJumpToSpread={onJumpToSpread}
+              onDragActivity={onDragActivity}
+            />
+          )
+        ) : totalSpreads <= 10 ? (
           <div className='flex items-center gap-1.5'>
             {Array.from({ length: totalSpreads }).map((_, i) => (
               <button
@@ -111,20 +135,22 @@ export function FlipControls({
           />
         )}
 
-        {/* Page counter - show current spread's page range */}
-        <div className='text-white/70 text-sm font-medium min-w-[80px] text-center'>
-          <span className='text-white'>
-            {isCoverSpread
-              ? '1'
-              : hasLeftPage && hasRightPage
-                ? `${leftPageNum}-${rightPageNum}`
-                : hasLeftPage
-                  ? leftPageNum
-                  : rightPageNum}
-          </span>
-          <span className='mx-1'>/</span>
-          <span>{totalPages}</span>
-        </div>
+        {/* Page counter — scrubber already shows this in mobile */}
+        {!isMobile && (
+          <div className='text-white/70 text-sm font-medium min-w-[80px] text-center'>
+            <span className='text-white'>
+              {isCoverSpread
+                ? '1'
+                : hasLeftPage && hasRightPage
+                  ? `${leftPageNum}-${rightPageNum}`
+                  : hasLeftPage
+                    ? leftPageNum
+                    : rightPageNum}
+            </span>
+            <span className='mx-1'>/</span>
+            <span>{totalPages}</span>
+          </div>
+        )}
       </div>
 
       {/* Next button */}
@@ -132,7 +158,8 @@ export function FlipControls({
         onClick={onNext}
         disabled={!canGoNext || isAnimating}
         className={`
-          p-3 rounded-full transition-all duration-200
+          min-w-[44px] min-h-[44px] p-3 rounded-full transition-all duration-200
+          flex items-center justify-center
           ${
             canGoNext && !isAnimating
               ? 'bg-white/10 hover:bg-white/20 text-white'
@@ -156,8 +183,8 @@ export function FlipControls({
         </svg>
       </button>
 
-      {/* Zoom controls separator */}
-      {onZoomIn && (
+      {/* Zoom controls separator — hidden on mobile (pinch/double-tap) */}
+      {onZoomIn && !isMobile && (
         <>
           <div className='w-px h-6 bg-white/20' />
 

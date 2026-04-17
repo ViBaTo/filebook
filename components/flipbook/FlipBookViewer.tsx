@@ -4,6 +4,7 @@ import NextImage from 'next/image'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { FlipPage } from './FlipPage'
 import { FlipControls } from './FlipControls'
+import { TapZones } from './TapZones'
 
 interface FlipBookViewerProps {
   pages: string[]
@@ -63,15 +64,34 @@ export function FlipBookViewer({
 
   const [transitionEnabled, setTransitionEnabled] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [chromeVisible, setChromeVisible] = useState(true)
+  // activityKey bumps on every showChromeBriefly() call so the auto-hide
+  // effect resets its timer even when chromeVisible is already true
+  // (e.g. user scrubs while chrome was already shown by a prior tap).
+  const [activityKey, setActivityKey] = useState(0)
+  const toggleChrome = useCallback(() => setChromeVisible((v) => !v), [])
+  const showChromeBriefly = useCallback(() => {
+    setChromeVisible(true)
+    setActivityKey((k) => k + 1)
+  }, [])
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
+  // Mobile-detect is only used for CHROME (footer/header) adaptations —
+  // layout stays as a two-page spread on every screen so the flip-book
+  // feel is preserved. Small screens just scale the whole spread down.
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const mq = window.matchMedia('(max-width: 640px)')
-    const update = () => setIsMobile(mq.matches)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
+    const compute = () => {
+      const shortestSide = Math.min(window.innerWidth, window.innerHeight)
+      setIsMobile(shortestSide <= 500)
+    }
+    compute()
+    window.addEventListener('resize', compute)
+    window.addEventListener('orientationchange', compute)
+    return () => {
+      window.removeEventListener('resize', compute)
+      window.removeEventListener('orientationchange', compute)
+    }
   }, [])
 
   useEffect(() => {
@@ -85,9 +105,9 @@ export function FlipBookViewer({
 
   const totalPages = pages.length
 
-  const pagesPerSpread = isMobile ? 1 : 2
-  const totalSpreads =
-    pagesPerSpread === 1 ? totalPages : 1 + Math.ceil((totalPages - 1) / 2)
+  // Always two-page spread — the book-flip experience is the product.
+  const pagesPerSpread: number = 2
+  const totalSpreads = 1 + Math.ceil((totalPages - 1) / 2)
 
   // Clamp currentSpread if layout changes (e.g. rotate, single-page toggle).
   // Uses the "adjusting state while rendering" pattern so we avoid the
@@ -100,6 +120,15 @@ export function FlipBookViewer({
       setCurrentSpread(Math.max(0, totalSpreads - 1))
     }
   }
+
+  // Auto-hide chrome after 3s of inactivity on mobile. activityKey is in
+  // the deps so every showChromeBriefly() call resets the timer, even
+  // when chromeVisible is already true.
+  useEffect(() => {
+    if (!isMobile || !chromeVisible) return
+    const timer = setTimeout(() => setChromeVisible(false), 3000)
+    return () => clearTimeout(timer)
+  }, [isMobile, chromeVisible, currentSpread, activityKey])
 
   const isCoverSpread = pagesPerSpread === 2 && currentSpread === 0
 
@@ -297,6 +326,7 @@ export function FlipBookViewer({
   // Double-click to toggle zoom, anchored to click point
   const handleDoubleClick = useCallback(
     (e: React.MouseEvent) => {
+      showChromeBriefly()
       const container = scrollContainerRef.current
       if (!container) return
       const rect = container.getBoundingClientRect()
@@ -305,11 +335,12 @@ export function FlipBookViewer({
       const target = currentZoomRef.current > 1 ? 1 : 2
       applyZoom(target, anchorX, anchorY, true)
     },
-    [applyZoom]
+    [applyZoom, showChromeBriefly]
   )
 
   const goToSpread = useCallback(
     (direction: 'next' | 'prev') => {
+      showChromeBriefly()
       if (isAnimating) return
       if (direction === 'next' && currentSpread >= totalSpreads - 1) return
       if (direction === 'prev' && currentSpread <= 0) return
@@ -360,7 +391,7 @@ export function FlipBookViewer({
       }
       requestAnimationFrame(animate)
     },
-    [isAnimating, currentSpread, totalSpreads, onPageChange, pagesPerSpread, prefersReducedMotion]
+    [isAnimating, currentSpread, totalSpreads, onPageChange, pagesPerSpread, prefersReducedMotion, showChromeBriefly]
   )
 
   const goToNext = useCallback(() => goToSpread('next'), [goToSpread])
@@ -368,6 +399,7 @@ export function FlipBookViewer({
 
   const jumpToSpread = useCallback(
     (target: number) => {
+      showChromeBriefly()
       if (isAnimating) return
       const clamped = Math.max(0, Math.min(totalSpreads - 1, target))
       if (clamped === currentSpread) return
@@ -382,7 +414,7 @@ export function FlipBookViewer({
             : (clamped - 1) * 2 + 1
       onPageChange?.(reportedPage)
     },
-    [isAnimating, totalSpreads, currentSpread, onPageChange, pagesPerSpread]
+    [isAnimating, totalSpreads, currentSpread, onPageChange, pagesPerSpread, showChromeBriefly]
   )
 
   // Keyboard navigation. Skip when typing in inputs; only hijack Space if the
@@ -586,8 +618,8 @@ export function FlipBookViewer({
         className='absolute inset-0 flex'
         style={{ transformStyle: 'preserve-3d' }}
       >
-        {/* Left page container */}
-        {!isCoverSpread && (
+        {/* Left page container — only in two-page mode when not on cover */}
+        {pagesPerSpread === 2 && !isCoverSpread && (
           <div
             className='relative w-1/2 h-full'
             style={{ transformStyle: 'preserve-3d' }}
@@ -730,8 +762,9 @@ export function FlipBookViewer({
         </div>
       </div>
 
-      {/* Navigation hints */}
-      {currentSpread > 0 && (
+      {/* Navigation hints — hidden on mobile (TapZones overlay intercepts
+          touches on these areas). */}
+      {!isMobile && currentSpread > 0 && (
         <button
           type='button'
           onClick={goToPrev}
@@ -743,7 +776,7 @@ export function FlipBookViewer({
           </svg>
         </button>
       )}
-      {currentSpread < totalSpreads - 1 && (
+      {!isMobile && currentSpread < totalSpreads - 1 && (
         <button
           type='button'
           onClick={goToNext}
@@ -759,10 +792,14 @@ export function FlipBookViewer({
   )
 
   return (
-    <div className={`relative w-full h-full flex flex-col ${className}`}>
-      {/* Title & Owner */}
-      {(title || ownerName) && (
-        <div className='text-center py-2 shrink-0'>
+    <div
+      className={`relative w-full h-full flex flex-col ${className}`}
+    >
+      {/* Title & Owner — hidden on mobile (page header already shows branding) */}
+      {(title || ownerName) && !isMobile && (
+        <div
+          className={`text-center py-2 shrink-0 transition-opacity duration-300 ${chromeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        >
           {title && (
             <h1 className='text-xl font-medium text-white leading-tight'>
               {title}
@@ -787,7 +824,7 @@ export function FlipBookViewer({
         className='flex-1 overflow-auto'
       >
         <div
-          className='flex items-center justify-center p-4'
+          className={`flex items-center justify-center h-full ${isMobile ? 'p-0' : 'p-4'}`}
           style={{
             minHeight: '100%',
             minWidth: isZoomed ? 'fit-content' : '100%'
@@ -825,14 +862,28 @@ export function FlipBookViewer({
           ) : (
             <div
               ref={containerRef}
-              className='relative select-none w-full max-w-7xl'
-              style={{ aspectRatio: `${spreadAspectRatio} / 1` }}
+              className='relative select-none'
+              style={{
+                aspectRatio: `${spreadAspectRatio} / 1`,
+                width: '100%',
+                maxHeight: '100%',
+                margin: 'auto'
+              }}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onDoubleClick={handleDoubleClick}
             >
-              {bookInner}
+              <div className='relative w-full h-full'>
+                {bookInner}
+                <TapZones
+                  onPrev={goToPrev}
+                  onNext={goToNext}
+                  onToggleChrome={toggleChrome}
+                  enabled={!isZoomed}
+                  isMobile={isMobile}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -840,20 +891,26 @@ export function FlipBookViewer({
 
       {/* Controls */}
       {showControls && (
-        <FlipControls
-          currentSpread={currentSpread}
-          totalPages={totalPages}
-          totalSpreads={totalSpreads}
-          pagesPerSpread={pagesPerSpread}
-          onPrev={goToPrev}
-          onNext={goToNext}
-          onJumpToSpread={jumpToSpread}
-          isAnimating={isAnimating}
-          onZoomIn={zoomIn}
-          onZoomOut={zoomOut}
-          onZoomReset={zoomReset}
-          currentZoom={currentZoom}
-        />
+        <div
+          className={`transition-opacity duration-300 ${chromeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        >
+          <FlipControls
+            currentSpread={currentSpread}
+            totalPages={totalPages}
+            totalSpreads={totalSpreads}
+            pagesPerSpread={pagesPerSpread}
+            isMobile={isMobile}
+            onPrev={goToPrev}
+            onNext={goToNext}
+            onJumpToSpread={jumpToSpread}
+            onDragActivity={showChromeBriefly}
+            isAnimating={isAnimating}
+            onZoomIn={zoomIn}
+            onZoomOut={zoomOut}
+            onZoomReset={zoomReset}
+            currentZoom={currentZoom}
+          />
+        </div>
       )}
 
       {/* Watermark */}

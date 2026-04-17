@@ -55,7 +55,7 @@ export default async function EmbedPage({ params }: PageProps) {
   if (book.status !== 'ready') {
     const isError = book.status === 'error'
     return (
-      <div className='h-screen w-screen bg-[#1C1917] flex items-center justify-center text-white/70 text-sm px-6 text-center'>
+      <div className='h-svh w-screen bg-[#1C1917] flex items-center justify-center text-white/70 text-sm px-6 text-center'>
         {isError
           ? 'Este FlipBook no se pudo generar.'
           : 'Este FlipBook se está generando…'}
@@ -66,7 +66,7 @@ export default async function EmbedPage({ params }: PageProps) {
   const pagesUrls = (book.pages_urls as string[]) || []
 
   return (
-    <div className='h-screen w-screen bg-linear-to-br from-[#1C1917] via-[#292524] to-[#1C1917] overflow-hidden'>
+    <div className='h-svh w-screen bg-linear-to-br from-[#1C1917] via-[#292524] to-[#1C1917] overflow-hidden'>
       <EmbedViewerWrapper
         bookId={book.id}
         pages={pagesUrls}
