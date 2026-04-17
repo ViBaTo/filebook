@@ -408,17 +408,19 @@ export function FlipBookViewer({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [goToNext, goToPrev])
 
-  // Auto flip
+  // Auto flip — loop back to first spread when reaching the end
   useEffect(() => {
-    if (autoFlipSeconds > 0 && !isAnimating) {
-      const timer = setTimeout(() => {
-        if (currentSpread < totalSpreads - 1) {
-          goToNext()
-        }
-      }, autoFlipSeconds * 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [autoFlipSeconds, currentSpread, totalSpreads, goToNext, isAnimating])
+    if (autoFlipSeconds <= 0 || isAnimating) return
+    const timer = setTimeout(() => {
+      if (currentSpread < totalSpreads - 1) {
+        goToNext()
+      } else {
+        setCurrentSpread(0)
+        onPageChange?.(0)
+      }
+    }, autoFlipSeconds * 1000)
+    return () => clearTimeout(timer)
+  }, [autoFlipSeconds, currentSpread, totalSpreads, goToNext, isAnimating, onPageChange])
 
   // Wheel / trackpad zoom (Ctrl+scroll or pinch on trackpad).
   // Coalesce events per animation frame; exponential mapping keeps steps
