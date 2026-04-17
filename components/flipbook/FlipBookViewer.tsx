@@ -317,6 +317,7 @@ export function FlipBookViewer({
   // Double-click to toggle zoom, anchored to click point
   const handleDoubleClick = useCallback(
     (e: React.MouseEvent) => {
+      showChromeBriefly()
       const container = scrollContainerRef.current
       if (!container) return
       const rect = container.getBoundingClientRect()
@@ -325,7 +326,7 @@ export function FlipBookViewer({
       const target = currentZoomRef.current > 1 ? 1 : 2
       applyZoom(target, anchorX, anchorY, true)
     },
-    [applyZoom]
+    [applyZoom, showChromeBriefly]
   )
 
   const goToSpread = useCallback(
@@ -752,8 +753,9 @@ export function FlipBookViewer({
         </div>
       </div>
 
-      {/* Navigation hints */}
-      {currentSpread > 0 && (
+      {/* Navigation hints — hidden on mobile (TapZones overlay intercepts
+          touches on these areas). */}
+      {!isMobile && currentSpread > 0 && (
         <button
           type='button'
           onClick={goToPrev}
@@ -765,7 +767,7 @@ export function FlipBookViewer({
           </svg>
         </button>
       )}
-      {currentSpread < totalSpreads - 1 && (
+      {!isMobile && currentSpread < totalSpreads - 1 && (
         <button
           type='button'
           onClick={goToNext}
@@ -892,6 +894,7 @@ export function FlipBookViewer({
             onPrev={goToPrev}
             onNext={goToNext}
             onJumpToSpread={jumpToSpread}
+            onDragActivity={showChromeBriefly}
             isAnimating={isAnimating}
             onZoomIn={zoomIn}
             onZoomOut={zoomOut}

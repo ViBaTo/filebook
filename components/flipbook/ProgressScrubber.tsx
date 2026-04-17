@@ -7,6 +7,7 @@ interface ProgressScrubberProps {
   totalSpreads: number
   totalPages: number
   onJumpToSpread: (target: number) => void
+  onDragActivity?: () => void
 }
 
 // Barra horizontal con handle. Tap → salta a esa página. Drag con pointer
@@ -16,7 +17,8 @@ export function ProgressScrubber({
   currentSpread,
   totalSpreads,
   totalPages,
-  onJumpToSpread
+  onJumpToSpread,
+  onDragActivity
 }: ProgressScrubberProps) {
   const trackRef = useRef<HTMLDivElement>(null)
   const [dragSpread, setDragSpread] = useState<number | null>(null)
@@ -33,11 +35,14 @@ export function ProgressScrubber({
     e.currentTarget.setPointerCapture(e.pointerId)
     const s = spreadFromClientX(e.clientX)
     setDragSpread(s)
+    onDragActivity?.()
   }
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (dragSpread === null) return
     setDragSpread(spreadFromClientX(e.clientX))
+    // Keep chrome visible while user is actively scrubbing.
+    onDragActivity?.()
   }
 
   const handlePointerUp = (e: React.PointerEvent) => {
@@ -45,7 +50,15 @@ export function ProgressScrubber({
       onJumpToSpread(dragSpread)
       setDragSpread(null)
     }
-    e.currentTarget.releasePointerCapture(e.pointerId)
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    }
+  }
+
+  // Separate cancel handler — the browser auto-releases capture on cancel,
+  // so calling releasePointerCapture would throw NotFoundError.
+  const handlePointerCancel = () => {
+    setDragSpread(null)
   }
 
   const displaySpread = dragSpread ?? currentSpread
@@ -73,7 +86,7 @@ export function ProgressScrubber({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
       >
         <div className='absolute inset-x-0 h-1 bg-white/20 rounded-full' />
         <div

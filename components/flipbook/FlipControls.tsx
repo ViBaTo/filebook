@@ -11,6 +11,7 @@ interface FlipControlsProps {
   onPrev: () => void
   onNext: () => void
   onJumpToSpread?: (target: number) => void
+  onDragActivity?: () => void
   isAnimating: boolean
   onZoomIn?: () => void
   onZoomOut?: () => void
@@ -27,6 +28,7 @@ export function FlipControls({
   onPrev,
   onNext,
   onJumpToSpread,
+  onDragActivity,
   isAnimating,
   onZoomIn,
   onZoomOut,
@@ -104,6 +106,7 @@ export function FlipControls({
               totalSpreads={totalSpreads}
               totalPages={totalPages}
               onJumpToSpread={onJumpToSpread}
+              onDragActivity={onDragActivity}
             />
           )
         ) : totalSpreads <= 10 ? (
