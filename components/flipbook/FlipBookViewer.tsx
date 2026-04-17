@@ -69,14 +69,27 @@ export function FlipBookViewer({
   const showChromeBriefly = useCallback(() => setChromeVisible(true), [])
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
+  // Single-page vs two-page mode. Uses both width AND available height:
+  // on landscape phones (844×390) the width is > 640 but the spread is too
+  // short vertically to feel comfortable — fall back to single-page there too.
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const mq = window.matchMedia('(max-width: 640px)')
-    const update = () => setIsMobile(mq.matches)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [])
+    const compute = () => {
+      const w = window.innerWidth
+      const h = window.innerHeight
+      const smallWidth = w <= 640
+      const spreadH = w / (pageAspectRatio * 2)
+      const crampedHeight = spreadH < h * 0.4
+      setIsMobile(smallWidth || crampedHeight)
+    }
+    compute()
+    window.addEventListener('resize', compute)
+    window.addEventListener('orientationchange', compute)
+    return () => {
+      window.removeEventListener('resize', compute)
+      window.removeEventListener('orientationchange', compute)
+    }
+  }, [pageAspectRatio])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
