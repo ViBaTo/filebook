@@ -65,8 +65,15 @@ export function FlipBookViewer({
   const [transitionEnabled, setTransitionEnabled] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [chromeVisible, setChromeVisible] = useState(true)
+  // activityKey bumps on every showChromeBriefly() call so the auto-hide
+  // effect resets its timer even when chromeVisible is already true
+  // (e.g. user scrubs while chrome was already shown by a prior tap).
+  const [activityKey, setActivityKey] = useState(0)
   const toggleChrome = useCallback(() => setChromeVisible((v) => !v), [])
-  const showChromeBriefly = useCallback(() => setChromeVisible(true), [])
+  const showChromeBriefly = useCallback(() => {
+    setChromeVisible(true)
+    setActivityKey((k) => k + 1)
+  }, [])
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
   // Mobile-detect is only used for CHROME (footer/header) adaptations —
@@ -114,12 +121,14 @@ export function FlipBookViewer({
     }
   }
 
-  // Auto-hide chrome after 3s of inactivity on mobile
+  // Auto-hide chrome after 3s of inactivity on mobile. activityKey is in
+  // the deps so every showChromeBriefly() call resets the timer, even
+  // when chromeVisible is already true.
   useEffect(() => {
     if (!isMobile || !chromeVisible) return
     const timer = setTimeout(() => setChromeVisible(false), 3000)
     return () => clearTimeout(timer)
-  }, [isMobile, chromeVisible, currentSpread])
+  }, [isMobile, chromeVisible, currentSpread, activityKey])
 
   const isCoverSpread = pagesPerSpread === 2 && currentSpread === 0
 
