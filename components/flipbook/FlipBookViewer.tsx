@@ -703,18 +703,28 @@ export function FlipBookViewer({
 
       {/* Navigation hints */}
       {currentSpread > 0 && (
-        <div className='absolute left-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none'>
+        <button
+          type='button'
+          onClick={goToPrev}
+          aria-label='Previous spread'
+          className='absolute left-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors'
+        >
           <svg className='w-8 h-8' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
           </svg>
-        </div>
+        </button>
       )}
       {currentSpread < totalSpreads - 1 && (
-        <div className='absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none'>
+        <button
+          type='button'
+          onClick={goToNext}
+          aria-label='Next spread'
+          className='absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors'
+        >
           <svg className='w-8 h-8' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
           </svg>
-        </div>
+        </button>
       )}
     </div>
   )
