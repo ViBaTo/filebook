@@ -98,15 +98,18 @@ export default async function ViewPage({ params }: PageProps) {
   const owner = await getBookOwner(book.user_id)
 
   return (
-    <div className='min-h-screen bg-linear-to-br from-[#1C1917] via-[#292524] to-[#1C1917]'>
+    <div className='min-h-svh bg-linear-to-br from-[#1C1917] via-[#292524] to-[#1C1917]'>
       {/* Header */}
-      <header className='absolute top-0 left-0 right-0 z-50 p-4 flex items-center justify-between'>
+      <header
+        className='absolute top-0 left-0 right-0 z-50 p-2 sm:p-4 flex items-center justify-between'
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 8px)' }}
+      >
         <div className='flex items-center gap-3'>
           <Link
             href='/'
             className='text-white/70 hover:text-white transition-colors'
           >
-            <svg className='w-8 h-8' viewBox='0 0 24 24' fill='currentColor'>
+            <svg className='w-6 h-6 sm:w-8 sm:h-8' viewBox='0 0 24 24' fill='currentColor'>
               <path
                 d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
                 stroke='currentColor'
@@ -123,7 +126,7 @@ export default async function ViewPage({ params }: PageProps) {
       </header>
 
       {/* Main viewer */}
-      <main className='h-screen pt-16 pb-4'>
+      <main className='h-svh pt-12 sm:pt-16'>
         <FlipBookViewerWrapper
           bookId={book.id}
           pages={pagesUrls}

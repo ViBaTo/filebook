@@ -57,7 +57,14 @@ export function FlipControls({
   const isZoomed = currentZoom > 1.05
 
   return (
-    <div className={`flex items-center ${isMobile ? 'justify-between px-3 py-3 gap-2' : 'justify-center gap-6 py-4'}`}>
+    <div
+      className={`flex items-center ${isMobile ? 'justify-between px-3 py-3 gap-2' : 'justify-center gap-6 py-4'}`}
+      style={
+        isMobile
+          ? { paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)' }
+          : undefined
+      }
+    >
       {/* Previous button */}
       <button
         onClick={onPrev}
