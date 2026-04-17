@@ -48,6 +48,7 @@ export function FlipBookViewer({
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const retryCountRef = useRef<Map<number, number>>(new Map())
+  const loadingImagesRef = useRef<Set<number>>(new Set())
   const MAX_RETRIES = 2
 
   const totalPages = pages.length
@@ -110,37 +111,71 @@ export function FlipBookViewer({
     }
 
     const timers: ReturnType<typeof setTimeout>[] = []
+    const createdImages: HTMLImageElement[] = []
+    let cancelled = false
 
     pagesToPreload.forEach((pageIndex) => {
-      if (!loadedImages.has(pageIndex) && !failedImages.has(pageIndex)) {
-        const img = new Image()
-        img.onload = () => {
-          setLoadedImages((prev) => new Set([...prev, pageIndex]))
-          retryCountRef.current.delete(pageIndex)
-        }
-        img.onerror = () => {
-          const attempts = retryCountRef.current.get(pageIndex) ?? 0
-          if (attempts < MAX_RETRIES) {
-            retryCountRef.current.set(pageIndex, attempts + 1)
-            const timerId = setTimeout(() => {
-              const url = pages[pageIndex]
-              if (!url) return
-              const retryImg = new Image()
-              retryImg.onload = img.onload
-              retryImg.onerror = img.onerror
-              retryImg.src = `${url}${url.includes('?') ? '&' : '?'}retry=${attempts + 1}`
-            }, 1000 * (attempts + 1))
-            timers.push(timerId)
-          } else {
-            setFailedImages((prev) => new Set([...prev, pageIndex]))
-          }
-        }
-        img.src = pages[pageIndex]
+      if (
+        loadedImages.has(pageIndex) ||
+        failedImages.has(pageIndex) ||
+        loadingImagesRef.current.has(pageIndex)
+      ) return
+
+      loadingImagesRef.current.add(pageIndex)
+      const img = new Image()
+      createdImages.push(img)
+
+      const onLoad = () => {
+        if (cancelled) return
+        loadingImagesRef.current.delete(pageIndex)
+        setLoadedImages((prev) => {
+          if (prev.has(pageIndex)) return prev
+          const next = new Set(prev)
+          next.add(pageIndex)
+          return next
+        })
+        retryCountRef.current.delete(pageIndex)
       }
+
+      const onError = () => {
+        if (cancelled) return
+        const attempts = retryCountRef.current.get(pageIndex) ?? 0
+        if (attempts < MAX_RETRIES) {
+          retryCountRef.current.set(pageIndex, attempts + 1)
+          const timerId = setTimeout(() => {
+            if (cancelled) return
+            const url = pages[pageIndex]
+            if (!url) return
+            const retryImg = new Image()
+            createdImages.push(retryImg)
+            retryImg.onload = onLoad
+            retryImg.onerror = onError
+            retryImg.src = `${url}${url.includes('?') ? '&' : '?'}retry=${attempts + 1}`
+          }, 1000 * (attempts + 1))
+          timers.push(timerId)
+        } else {
+          loadingImagesRef.current.delete(pageIndex)
+          setFailedImages((prev) => {
+            if (prev.has(pageIndex)) return prev
+            const next = new Set(prev)
+            next.add(pageIndex)
+            return next
+          })
+        }
+      }
+
+      img.onload = onLoad
+      img.onerror = onError
+      img.src = pages[pageIndex]
     })
 
     return () => {
+      cancelled = true
       timers.forEach(clearTimeout)
+      createdImages.forEach((img) => {
+        img.onload = null
+        img.onerror = null
+      })
     }
   }, [currentSpread, pages, totalPages, totalSpreads, loadedImages, failedImages])
 
@@ -318,6 +353,7 @@ export function FlipBookViewer({
       return next
     })
     retryCountRef.current.delete(pageIndex)
+    loadingImagesRef.current.delete(pageIndex)
   }, [])
 
   const renderFailedPage = (pageIndex: number) => (
