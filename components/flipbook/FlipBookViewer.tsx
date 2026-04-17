@@ -758,8 +758,14 @@ export function FlipBookViewer({
     </div>
   )
 
+  const chromeHeightPx =
+    (title || ownerName ? 48 : 0) + (showControls ? 64 : 0) + 8
+
   return (
-    <div className={`relative w-full h-full flex flex-col ${className}`}>
+    <div
+      className={`relative w-full h-full flex flex-col ${className}`}
+      style={{ ['--viewer-chrome-height' as string]: `${chromeHeightPx}px` }}
+    >
       {/* Title & Owner */}
       {(title || ownerName) && (
         <div className='text-center py-2 shrink-0'>
@@ -787,7 +793,7 @@ export function FlipBookViewer({
         className='flex-1 overflow-auto'
       >
         <div
-          className='flex items-center justify-center p-4'
+          className='flex items-center justify-center p-2 sm:p-4 h-full'
           style={{
             minHeight: '100%',
             minWidth: isZoomed ? 'fit-content' : '100%'
@@ -825,8 +831,13 @@ export function FlipBookViewer({
           ) : (
             <div
               ref={containerRef}
-              className='relative select-none w-full max-w-7xl'
-              style={{ aspectRatio: `${spreadAspectRatio} / 1` }}
+              className='relative select-none mx-auto'
+              style={{
+                aspectRatio: `${spreadAspectRatio} / 1`,
+                width: '100%',
+                maxWidth: `min(100%, calc((100vh - var(--viewer-chrome-height, 0px)) * ${spreadAspectRatio}))`,
+                maxHeight: '100%'
+              }}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
