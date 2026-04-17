@@ -60,11 +60,21 @@ export function FlipBookViewer({
 
   const [transitionEnabled, setTransitionEnabled] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     const mq = window.matchMedia('(max-width: 640px)')
     const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setPrefersReducedMotion(mq.matches)
     update()
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
@@ -293,6 +303,20 @@ export function FlipBookViewer({
         container.scrollTop = 0
       }
 
+      if (prefersReducedMotion) {
+        const newSpread =
+          direction === 'next' ? currentSpread + 1 : currentSpread - 1
+        setCurrentSpread(newSpread)
+        const reportedPage =
+          pagesPerSpread === 1
+            ? newSpread
+            : newSpread === 0
+              ? 0
+              : (newSpread - 1) * 2 + 1
+        onPageChange?.(reportedPage)
+        return
+      }
+
       setIsAnimating(true)
       setFlipDirection(direction)
 
@@ -326,7 +350,7 @@ export function FlipBookViewer({
       }
       requestAnimationFrame(animate)
     },
-    [isAnimating, currentSpread, totalSpreads, onPageChange, pagesPerSpread]
+    [isAnimating, currentSpread, totalSpreads, onPageChange, pagesPerSpread, prefersReducedMotion]
   )
 
   const goToNext = useCallback(() => goToSpread('next'), [goToSpread])
