@@ -51,7 +51,14 @@ export function FlipBookViewer({
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const retryCountRef = useRef<Map<number, number>>(new Map())
   const loadingImagesRef = useRef<Set<number>>(new Set())
+  const currentZoomRef = useRef(1)
+  const pendingDeltaRef = useRef(0)
+  const rafScheduledRef = useRef(false)
+  const anchorRef = useRef({ x: 0, y: 0 })
+  const lastPinchEndedAtRef = useRef(0)
   const MAX_RETRIES = 2
+
+  const [transitionEnabled, setTransitionEnabled] = useState(false)
 
   const totalPages = pages.length
 
@@ -71,29 +78,25 @@ export function FlipBookViewer({
   const hasLeftPage = leftPageIndex >= 0 && leftPageIndex < totalPages
   const hasRightPage = rightPageIndex < totalPages
 
-  // Measure the base width of the book container at zoom 1x
-  useEffect(() => {
-    const measure = () => {
-      if (containerRef.current && currentZoom <= 1) {
-        setBaseWidth(containerRef.current.offsetWidth)
-      }
-    }
-    measure()
-    window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
-  }, [currentZoom])
-
-  // Center scroll position when zoom changes
+  // Measure base width via ResizeObserver. Skip while zoomed to avoid
+  // feedback loops; on return to 1x the next observer tick refreshes it.
   useEffect(() => {
     const container = scrollContainerRef.current
-    if (!container || currentZoom <= 1) return
+    const inner = containerRef.current
+    if (!container || !inner) return
 
-    requestAnimationFrame(() => {
-      const scrollX = (container.scrollWidth - container.clientWidth) / 2
-      const scrollY = (container.scrollHeight - container.clientHeight) / 2
-      container.scrollTo({ left: scrollX, top: scrollY, behavior: 'smooth' })
-    })
-  }, [currentZoom])
+    const measure = () => {
+      if (currentZoomRef.current <= 1) {
+        const w = inner.offsetWidth
+        if (w > 0) setBaseWidth(w)
+      }
+    }
+
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(container)
+    return () => ro.disconnect()
+  }, [])
 
   // Preload adjacent spreads
   useEffect(() => {
@@ -187,22 +190,77 @@ export function FlipBookViewer({
     []
   )
 
+  // Apply a new zoom level while keeping the anchor point (in viewport coords
+  // of the scroll container) stable. animated=true enables a short CSS
+  // transition for discrete actions; continuous input (wheel/pinch) passes false.
+  const applyZoom = useCallback(
+    (newZoom: number, anchorX: number, anchorY: number, animated = false) => {
+      const container = scrollContainerRef.current
+      if (!container) return
+      const oldZoom = currentZoomRef.current
+      const clamped = clampZoom(newZoom)
+      if (clamped === oldZoom) return
+
+      const contentX = container.scrollLeft + anchorX
+      const contentY = container.scrollTop + anchorY
+      const k = clamped / oldZoom
+
+      currentZoomRef.current = clamped
+      if (animated) setTransitionEnabled(true)
+      setCurrentZoom(clamped)
+
+      requestAnimationFrame(() => {
+        container.scrollLeft = contentX * k - anchorX
+        container.scrollTop = contentY * k - anchorY
+      })
+    },
+    [clampZoom]
+  )
+
+  const getCenterAnchor = useCallback(() => {
+    const container = scrollContainerRef.current
+    return {
+      x: (container?.clientWidth ?? 0) / 2,
+      y: (container?.clientHeight ?? 0) / 2
+    }
+  }, [])
+
   const zoomIn = useCallback(() => {
-    setCurrentZoom((prev) => clampZoom(prev + ZOOM_STEP))
-  }, [clampZoom])
+    const anchor = getCenterAnchor()
+    applyZoom(currentZoomRef.current + ZOOM_STEP, anchor.x, anchor.y, true)
+  }, [applyZoom, getCenterAnchor])
 
   const zoomOut = useCallback(() => {
-    setCurrentZoom((prev) => clampZoom(prev - ZOOM_STEP))
-  }, [clampZoom])
+    const anchor = getCenterAnchor()
+    applyZoom(currentZoomRef.current - ZOOM_STEP, anchor.x, anchor.y, true)
+  }, [applyZoom, getCenterAnchor])
 
   const zoomReset = useCallback(() => {
+    const container = scrollContainerRef.current
+    currentZoomRef.current = 1
+    setTransitionEnabled(true)
     setCurrentZoom(1)
+    if (container) {
+      requestAnimationFrame(() => {
+        container.scrollLeft = 0
+        container.scrollTop = 0
+      })
+    }
   }, [])
 
-  // Double-click to toggle zoom
-  const handleDoubleClick = useCallback(() => {
-    setCurrentZoom((prev) => (prev > 1 ? 1 : 2))
-  }, [])
+  // Double-click to toggle zoom, anchored to click point
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      const container = scrollContainerRef.current
+      if (!container) return
+      const rect = container.getBoundingClientRect()
+      const anchorX = e.clientX - rect.left
+      const anchorY = e.clientY - rect.top
+      const target = currentZoomRef.current > 1 ? 1 : 2
+      applyZoom(target, anchorX, anchorY, true)
+    },
+    [applyZoom]
+  )
 
   const goToSpread = useCallback(
     (direction: 'next' | 'prev') => {
@@ -210,8 +268,14 @@ export function FlipBookViewer({
       if (direction === 'next' && currentSpread >= totalSpreads - 1) return
       if (direction === 'prev' && currentSpread <= 0) return
 
-      // Reset zoom before flipping
+      // Reset zoom & scroll before flipping
+      currentZoomRef.current = 1
       setCurrentZoom(1)
+      const container = scrollContainerRef.current
+      if (container) {
+        container.scrollLeft = 0
+        container.scrollTop = 0
+      }
 
       setIsAnimating(true)
       setFlipDirection(direction)
@@ -277,22 +341,42 @@ export function FlipBookViewer({
     }
   }, [autoFlipSeconds, currentSpread, totalSpreads, goToNext, isAnimating])
 
-  // Wheel / trackpad zoom (Ctrl+scroll or pinch on trackpad)
+  // Wheel / trackpad zoom (Ctrl+scroll or pinch on trackpad).
+  // Coalesce events per animation frame; exponential mapping keeps steps
+  // perceptually uniform across zoom levels.
   useEffect(() => {
     const container = scrollContainerRef.current
     if (!container) return
 
+    const ZOOM_SENSITIVITY = 0.0015
+
     const handleWheel = (e: WheelEvent) => {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault()
-        const delta = -e.deltaY * 0.01
-        setCurrentZoom((prev) => clampZoom(prev + delta))
+      if (!(e.ctrlKey || e.metaKey)) return
+      e.preventDefault()
+      const rect = container.getBoundingClientRect()
+      anchorRef.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
       }
+      pendingDeltaRef.current += e.deltaY
+      if (rafScheduledRef.current) return
+      rafScheduledRef.current = true
+      requestAnimationFrame(() => {
+        const factor = Math.exp(-pendingDeltaRef.current * ZOOM_SENSITIVITY)
+        applyZoom(
+          currentZoomRef.current * factor,
+          anchorRef.current.x,
+          anchorRef.current.y,
+          false
+        )
+        pendingDeltaRef.current = 0
+        rafScheduledRef.current = false
+      })
     }
 
     container.addEventListener('wheel', handleWheel, { passive: false })
     return () => container.removeEventListener('wheel', handleWheel)
-  }, [clampZoom])
+  }, [applyZoom])
 
   // Touch handling: swipe to navigate + pinch to zoom
   const touchStartX = useRef(0)
@@ -302,12 +386,11 @@ export function FlipBookViewer({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
-      // Pinch start
       isPinching.current = true
       const dx = e.touches[0].clientX - e.touches[1].clientX
       const dy = e.touches[0].clientY - e.touches[1].clientY
       pinchStartDistance.current = Math.hypot(dx, dy)
-      pinchStartZoom.current = currentZoom
+      pinchStartZoom.current = currentZoomRef.current
     } else if (e.touches.length === 1) {
       isPinching.current = false
       touchStartX.current = e.touches[0].clientX
@@ -315,33 +398,35 @@ export function FlipBookViewer({
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX
-      const dy = e.touches[0].clientY - e.touches[1].clientY
-      const distance = Math.hypot(dx, dy)
-      if (pinchStartDistance.current > 0) {
-        const scale = distance / pinchStartDistance.current
-        setCurrentZoom(clampZoom(pinchStartZoom.current * scale))
-      }
-    }
+    if (e.touches.length !== 2) return
+    const container = scrollContainerRef.current
+    if (!container) return
+    const rect = container.getBoundingClientRect()
+    const dx = e.touches[0].clientX - e.touches[1].clientX
+    const dy = e.touches[0].clientY - e.touches[1].clientY
+    const distance = Math.hypot(dx, dy)
+    if (pinchStartDistance.current <= 0) return
+    const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left
+    const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top
+    const scale = distance / pinchStartDistance.current
+    applyZoom(pinchStartZoom.current * scale, midX, midY, false)
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (isPinching.current) {
       isPinching.current = false
+      lastPinchEndedAtRef.current = Date.now()
       return
     }
-    // Swipe navigation (only when not zoomed)
-    if (currentZoom > 1) return
+    // Suppress swipe for 150ms after a pinch ends to avoid accidental flips
+    if (Date.now() - lastPinchEndedAtRef.current < 150) return
+    if (currentZoomRef.current > 1) return
     const touchEndX = e.changedTouches[0].clientX
     const diff = touchStartX.current - touchEndX
 
     if (Math.abs(diff) > 50) {
-      if (diff > 0) {
-        goToNext()
-      } else {
-        goToPrev()
-      }
+      if (diff > 0) goToNext()
+      else goToPrev()
     }
   }
 
@@ -387,15 +472,183 @@ export function FlipBookViewer({
   const prevSpreadRightIndex =
     prevSpread === 0 ? 0 : prevSpread > 0 ? (prevSpread - 1) * 2 + 2 : -1
 
-  // Compute container style based on zoom
-  // At zoom 1x: responsive (w-full max-w-7xl)
-  // At zoom > 1x: explicit width = baseWidth * zoom (container grows, parent scrolls)
-  const isZoomed = currentZoom > 1
-  const zoomedWidth = isZoomed && baseWidth > 0 ? baseWidth * currentZoom : undefined
-
   // Spread ratio = two pages side by side when open. Cover keeps the same
   // container ratio so the layout doesn't jump when the book opens.
   const spreadAspectRatio = pageAspectRatio * 2
+
+  const isZoomed = currentZoom > 1
+
+  const bookInner = (
+    <div
+      className='relative w-full h-full'
+      style={{ perspective: '2000px' }}
+    >
+      {/* Pages container - two page spread */}
+      <div
+        className='absolute inset-0 flex'
+        style={{ transformStyle: 'preserve-3d' }}
+      >
+        {/* Left page container */}
+        {!isCoverSpread && (
+          <div
+            className='relative w-1/2 h-full'
+            style={{ transformStyle: 'preserve-3d' }}
+          >
+            {flipDirection === 'prev' &&
+              prevSpreadLeftIndex >= 0 &&
+              prevSpreadLeftIndex < totalPages && (
+                <div className='absolute inset-0 bg-transparent overflow-hidden'>
+                  {isPageLoaded(prevSpreadLeftIndex) ? (
+                    <NextImage
+                      src={pages[prevSpreadLeftIndex]}
+                      alt={`Page ${prevSpreadLeftIndex + 1}`}
+                      fill
+                      sizes='50vw'
+                      unoptimized
+                      className='object-contain'
+                      draggable={false}
+                    />
+                  ) : isPageFailed(prevSpreadLeftIndex) ? (
+                    renderFailedPage(prevSpreadLeftIndex)
+                  ) : (
+                    renderSpinner()
+                  )}
+                </div>
+              )}
+
+            {flipDirection === 'prev' && prevSpread === 0 && (
+              <div className='absolute inset-0 bg-transparent overflow-hidden'>
+                <div className='w-full h-full bg-transparent' />
+              </div>
+            )}
+
+            {flipDirection !== 'prev' && (
+              <div className='absolute inset-0 bg-transparent overflow-hidden'>
+                {hasLeftPage && isPageLoaded(leftPageIndex) ? (
+                  <NextImage
+                    src={pages[leftPageIndex]}
+                    alt={`Page ${leftPageIndex + 1}`}
+                    fill
+                    sizes='50vw'
+                    unoptimized
+                    className='object-contain'
+                    draggable={false}
+                  />
+                ) : hasLeftPage && isPageFailed(leftPageIndex) ? (
+                  renderFailedPage(leftPageIndex)
+                ) : hasLeftPage ? (
+                  renderSpinner()
+                ) : (
+                  <div className='w-full h-full bg-transparent' />
+                )}
+              </div>
+            )}
+
+            {flipDirection === 'prev' && (
+              <FlipPage
+                direction='prev'
+                progress={flipProgress}
+                frontImage={
+                  hasLeftPage ? pages[leftPageIndex] : undefined
+                }
+                backImage={
+                  prevSpreadRightIndex >= 0 &&
+                  prevSpreadRightIndex < totalPages
+                    ? pages[prevSpreadRightIndex]
+                    : undefined
+                }
+                isLoaded={
+                  hasLeftPage ? isPageLoaded(leftPageIndex) : true
+                }
+              />
+            )}
+          </div>
+        )}
+
+        {/* Right page container */}
+        <div
+          className={`relative h-full ${isCoverSpread ? 'w-full flex items-center justify-center' : 'w-1/2'}`}
+          style={{ transformStyle: 'preserve-3d' }}
+        >
+          {flipDirection === 'next' &&
+            nextSpreadRightIndex < totalPages && (
+              <div className='absolute inset-0 bg-transparent overflow-hidden'>
+                {isPageLoaded(nextSpreadRightIndex) ? (
+                  <NextImage
+                    src={pages[nextSpreadRightIndex]}
+                    alt={`Page ${nextSpreadRightIndex + 1}`}
+                    fill
+                    sizes='50vw'
+                    unoptimized
+                    className='object-contain'
+                    draggable={false}
+                  />
+                ) : isPageFailed(nextSpreadRightIndex) ? (
+                  renderFailedPage(nextSpreadRightIndex)
+                ) : (
+                  renderSpinner()
+                )}
+              </div>
+            )}
+
+          {flipDirection !== 'next' && (
+            <div
+              className={`${isCoverSpread ? 'relative w-1/2 h-full' : 'absolute inset-0'} bg-transparent overflow-hidden`}
+            >
+              {hasRightPage && isPageLoaded(rightPageIndex) ? (
+                <NextImage
+                  src={pages[rightPageIndex]}
+                  alt={`Page ${rightPageIndex + 1}`}
+                  fill
+                  sizes='50vw'
+                  unoptimized
+                  className='object-contain'
+                  draggable={false}
+                />
+              ) : hasRightPage && isPageFailed(rightPageIndex) ? (
+                renderFailedPage(rightPageIndex)
+              ) : hasRightPage ? (
+                renderSpinner()
+              ) : (
+                <div className='w-full h-full bg-transparent' />
+              )}
+            </div>
+          )}
+
+          {flipDirection === 'next' && (
+            <FlipPage
+              direction='next'
+              progress={flipProgress}
+              frontImage={pages[rightPageIndex]}
+              backImage={
+                nextSpreadLeftIndex >= 0 &&
+                nextSpreadLeftIndex < totalPages
+                  ? pages[nextSpreadLeftIndex]
+                  : undefined
+              }
+              isLoaded={isPageLoaded(rightPageIndex)}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Navigation hints */}
+      {currentSpread > 0 && (
+        <div className='absolute left-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none'>
+          <svg className='w-8 h-8' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+          </svg>
+        </div>
+      )}
+      {currentSpread < totalSpreads - 1 && (
+        <div className='absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none'>
+          <svg className='w-8 h-8' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
+          </svg>
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <div className={`relative w-full h-full flex flex-col ${className}`}>
@@ -429,219 +682,51 @@ export function FlipBookViewer({
           className='flex items-center justify-center p-4'
           style={{
             minHeight: '100%',
-            minWidth: isZoomed ? 'fit-content' : '100%',
+            minWidth: isZoomed ? 'fit-content' : '100%'
           }}
         >
-          <div
-            ref={containerRef}
-            className={`relative select-none ${!zoomedWidth ? 'w-full max-w-7xl' : ''}`}
-            style={{
-              ...(zoomedWidth ? { width: `${zoomedWidth}px` } : {}),
-              aspectRatio: `${spreadAspectRatio} / 1`,
-              transition: 'width 0.3s ease',
-            }}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onDoubleClick={handleDoubleClick}
-          >
+          {isZoomed && baseWidth > 0 ? (
             <div
-              className='relative w-full h-full'
-              style={{ perspective: '2000px' }}
+              style={{
+                width: baseWidth * currentZoom,
+                height: (baseWidth / spreadAspectRatio) * currentZoom,
+                position: 'relative'
+              }}
             >
-              {/* Pages container - two page spread */}
               <div
-                className='absolute inset-0 flex'
-                style={{ transformStyle: 'preserve-3d' }}
+                ref={containerRef}
+                className='select-none absolute top-0 left-0'
+                style={{
+                  width: baseWidth,
+                  aspectRatio: `${spreadAspectRatio} / 1`,
+                  transform: `scale(${currentZoom})`,
+                  transformOrigin: '0 0',
+                  transition: transitionEnabled ? 'transform 0.2s ease' : 'none',
+                  willChange: 'transform',
+                  backfaceVisibility: 'hidden'
+                }}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onDoubleClick={handleDoubleClick}
+                onTransitionEnd={() => setTransitionEnabled(false)}
               >
-                {/* Left page container */}
-                {!isCoverSpread && (
-                  <div
-                    className='relative w-1/2 h-full'
-                    style={{ transformStyle: 'preserve-3d' }}
-                  >
-                    {/* Previous spread's left page (underneath, revealed when flipping prev) */}
-                    {flipDirection === 'prev' &&
-                      prevSpreadLeftIndex >= 0 &&
-                      prevSpreadLeftIndex < totalPages && (
-                        <div className='absolute inset-0 bg-transparent overflow-hidden'>
-                          {isPageLoaded(prevSpreadLeftIndex) ? (
-                            <NextImage
-                              src={pages[prevSpreadLeftIndex]}
-                              alt={`Page ${prevSpreadLeftIndex + 1}`}
-                              fill
-                              sizes='50vw'
-                              unoptimized
-                              className='object-contain'
-                              draggable={false}
-                            />
-                          ) : isPageFailed(prevSpreadLeftIndex) ? (
-                            renderFailedPage(prevSpreadLeftIndex)
-                          ) : (
-                            renderSpinner()
-                          )}
-                        </div>
-                      )}
-
-                    {/* Previous spread's right page for cover transition (when going back to cover) */}
-                    {flipDirection === 'prev' && prevSpread === 0 && (
-                      <div className='absolute inset-0 bg-transparent overflow-hidden'>
-                        <div className='w-full h-full bg-transparent' />
-                      </div>
-                    )}
-
-                    {/* Base left page (current) - hidden during 'prev' flip since FlipPage shows it */}
-                    {flipDirection !== 'prev' && (
-                      <div className='absolute inset-0 bg-transparent overflow-hidden'>
-                        {hasLeftPage && isPageLoaded(leftPageIndex) ? (
-                          <NextImage
-                            src={pages[leftPageIndex]}
-                            alt={`Page ${leftPageIndex + 1}`}
-                            fill
-                            sizes='50vw'
-                            unoptimized
-                            className='object-contain'
-                            draggable={false}
-                          />
-                        ) : hasLeftPage && isPageFailed(leftPageIndex) ? (
-                          renderFailedPage(leftPageIndex)
-                        ) : hasLeftPage ? (
-                          renderSpinner()
-                        ) : (
-                          <div className='w-full h-full bg-transparent' />
-                        )}
-                      </div>
-                    )}
-
-                    {/* Flipping page animation - prev direction */}
-                    {flipDirection === 'prev' && (
-                      <FlipPage
-                        direction='prev'
-                        progress={flipProgress}
-                        frontImage={
-                          hasLeftPage ? pages[leftPageIndex] : undefined
-                        }
-                        backImage={
-                          prevSpreadRightIndex >= 0 &&
-                          prevSpreadRightIndex < totalPages
-                            ? pages[prevSpreadRightIndex]
-                            : undefined
-                        }
-                        isLoaded={
-                          hasLeftPage ? isPageLoaded(leftPageIndex) : true
-                        }
-                      />
-                    )}
-                  </div>
-                )}
-
-                {/* Right page container - full width on cover, half width when open */}
-                <div
-                  className={`relative h-full ${isCoverSpread ? 'w-full flex items-center justify-center' : 'w-1/2'}`}
-                  style={{ transformStyle: 'preserve-3d' }}
-                >
-                  {/* Next spread's right page (underneath, revealed when flipping to next) */}
-                  {flipDirection === 'next' &&
-                    nextSpreadRightIndex < totalPages && (
-                      <div className='absolute inset-0 bg-transparent overflow-hidden'>
-                        {isPageLoaded(nextSpreadRightIndex) ? (
-                          <NextImage
-                            src={pages[nextSpreadRightIndex]}
-                            alt={`Page ${nextSpreadRightIndex + 1}`}
-                            fill
-                            sizes='50vw'
-                            unoptimized
-                            className='object-contain'
-                            draggable={false}
-                          />
-                        ) : isPageFailed(nextSpreadRightIndex) ? (
-                          renderFailedPage(nextSpreadRightIndex)
-                        ) : (
-                          renderSpinner()
-                        )}
-                      </div>
-                    )}
-
-                  {/* Base right page (current) - hidden during 'next' flip since FlipPage shows it */}
-                  {flipDirection !== 'next' && (
-                    <div
-                      className={`${isCoverSpread ? 'relative w-1/2 h-full' : 'absolute inset-0'} bg-transparent overflow-hidden`}
-                    >
-                      {hasRightPage && isPageLoaded(rightPageIndex) ? (
-                        <NextImage
-                          src={pages[rightPageIndex]}
-                          alt={`Page ${rightPageIndex + 1}`}
-                          fill
-                          sizes='50vw'
-                          unoptimized
-                          className='object-contain'
-                          draggable={false}
-                        />
-                      ) : hasRightPage && isPageFailed(rightPageIndex) ? (
-                        renderFailedPage(rightPageIndex)
-                      ) : hasRightPage ? (
-                        renderSpinner()
-                      ) : (
-                        <div className='w-full h-full bg-transparent' />
-                      )}
-                    </div>
-                  )}
-
-                  {/* Flipping page animation - next direction */}
-                  {flipDirection === 'next' && (
-                    <FlipPage
-                      direction='next'
-                      progress={flipProgress}
-                      frontImage={pages[rightPageIndex]}
-                      backImage={
-                        nextSpreadLeftIndex >= 0 &&
-                        nextSpreadLeftIndex < totalPages
-                          ? pages[nextSpreadLeftIndex]
-                          : undefined
-                      }
-                      isLoaded={isPageLoaded(rightPageIndex)}
-                    />
-                  )}
-                </div>
+                {bookInner}
               </div>
-
-              {/* Navigation hints */}
-              {currentSpread > 0 && (
-                <div className='absolute left-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none'>
-                  <svg
-                    className='w-8 h-8'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M15 19l-7-7 7-7'
-                    />
-                  </svg>
-                </div>
-              )}
-              {currentSpread < totalSpreads - 1 && (
-                <div className='absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none'>
-                  <svg
-                    className='w-8 h-8'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M9 5l7 7-7 7'
-                    />
-                  </svg>
-                </div>
-              )}
             </div>
-          </div>
+          ) : (
+            <div
+              ref={containerRef}
+              className='relative select-none w-full max-w-7xl'
+              style={{ aspectRatio: `${spreadAspectRatio} / 1` }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onDoubleClick={handleDoubleClick}
+            >
+              {bookInner}
+            </div>
+          )}
         </div>
       </div>
 
