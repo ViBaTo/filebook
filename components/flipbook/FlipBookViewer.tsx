@@ -66,6 +66,7 @@ export function FlipBookViewer({
   const [isMobile, setIsMobile] = useState(false)
   const [chromeVisible, setChromeVisible] = useState(true)
   const toggleChrome = useCallback(() => setChromeVisible((v) => !v), [])
+  const showChromeBriefly = useCallback(() => setChromeVisible(true), [])
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
   useEffect(() => {
@@ -103,6 +104,13 @@ export function FlipBookViewer({
       setCurrentSpread(Math.max(0, totalSpreads - 1))
     }
   }
+
+  // Auto-hide chrome after 3s of inactivity on mobile
+  useEffect(() => {
+    if (!isMobile || !chromeVisible) return
+    const timer = setTimeout(() => setChromeVisible(false), 3000)
+    return () => clearTimeout(timer)
+  }, [isMobile, chromeVisible, currentSpread])
 
   const isCoverSpread = pagesPerSpread === 2 && currentSpread === 0
 
@@ -313,6 +321,7 @@ export function FlipBookViewer({
 
   const goToSpread = useCallback(
     (direction: 'next' | 'prev') => {
+      showChromeBriefly()
       if (isAnimating) return
       if (direction === 'next' && currentSpread >= totalSpreads - 1) return
       if (direction === 'prev' && currentSpread <= 0) return
@@ -363,7 +372,7 @@ export function FlipBookViewer({
       }
       requestAnimationFrame(animate)
     },
-    [isAnimating, currentSpread, totalSpreads, onPageChange, pagesPerSpread, prefersReducedMotion]
+    [isAnimating, currentSpread, totalSpreads, onPageChange, pagesPerSpread, prefersReducedMotion, showChromeBriefly]
   )
 
   const goToNext = useCallback(() => goToSpread('next'), [goToSpread])
@@ -371,6 +380,7 @@ export function FlipBookViewer({
 
   const jumpToSpread = useCallback(
     (target: number) => {
+      showChromeBriefly()
       if (isAnimating) return
       const clamped = Math.max(0, Math.min(totalSpreads - 1, target))
       if (clamped === currentSpread) return
@@ -385,7 +395,7 @@ export function FlipBookViewer({
             : (clamped - 1) * 2 + 1
       onPageChange?.(reportedPage)
     },
-    [isAnimating, totalSpreads, currentSpread, onPageChange, pagesPerSpread]
+    [isAnimating, totalSpreads, currentSpread, onPageChange, pagesPerSpread, showChromeBriefly]
   )
 
   // Keyboard navigation. Skip when typing in inputs; only hijack Space if the
@@ -771,7 +781,9 @@ export function FlipBookViewer({
     >
       {/* Title & Owner */}
       {(title || ownerName) && (
-        <div className='text-center py-2 shrink-0'>
+        <div
+          className={`text-center py-2 shrink-0 transition-opacity duration-300 ${chromeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        >
           {title && (
             <h1 className='text-xl font-medium text-white leading-tight'>
               {title}
@@ -870,20 +882,24 @@ export function FlipBookViewer({
 
       {/* Controls */}
       {showControls && (
-        <FlipControls
-          currentSpread={currentSpread}
-          totalPages={totalPages}
-          totalSpreads={totalSpreads}
-          pagesPerSpread={pagesPerSpread}
-          onPrev={goToPrev}
-          onNext={goToNext}
-          onJumpToSpread={jumpToSpread}
-          isAnimating={isAnimating}
-          onZoomIn={zoomIn}
-          onZoomOut={zoomOut}
-          onZoomReset={zoomReset}
-          currentZoom={currentZoom}
-        />
+        <div
+          className={`transition-opacity duration-300 ${chromeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        >
+          <FlipControls
+            currentSpread={currentSpread}
+            totalPages={totalPages}
+            totalSpreads={totalSpreads}
+            pagesPerSpread={pagesPerSpread}
+            onPrev={goToPrev}
+            onNext={goToNext}
+            onJumpToSpread={jumpToSpread}
+            isAnimating={isAnimating}
+            onZoomIn={zoomIn}
+            onZoomOut={zoomOut}
+            onZoomReset={zoomReset}
+            currentZoom={currentZoom}
+          />
+        </div>
       )}
 
       {/* Watermark */}
