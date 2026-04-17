@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { FlipBookViewerWrapper } from './FlipBookViewerWrapper'
 import { ShareButton } from './ShareButton'
+import { StatusFallback } from './status-fallback'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -19,7 +20,6 @@ async function getBook(slug: string) {
     .select('*')
     .eq('slug', slug)
     .eq('is_public', true)
-    .eq('status', 'ready')
     .single()
 
   if (error || !book) {
@@ -84,6 +84,16 @@ export default async function ViewPage({ params }: PageProps) {
     notFound()
   }
 
+  if (book.status !== 'ready') {
+    return (
+      <StatusFallback
+        status={book.status as 'uploading' | 'processing' | 'error'}
+        errorMessage={book.error_message}
+        title={book.title}
+      />
+    )
+  }
+
   const pagesUrls = (book.pages_urls as string[]) || []
   const owner = await getBookOwner(book.user_id)
 
@@ -121,6 +131,7 @@ export default async function ViewPage({ params }: PageProps) {
           showWatermark={book.is_anonymous}
           autoFlipSeconds={book.settings?.auto_flip_seconds || 0}
           ownerName={owner?.full_name || null}
+          pageAspectRatio={book.settings?.page_aspect_ratio}
         />
       </main>
     </div>

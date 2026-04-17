@@ -4,8 +4,10 @@ interface FlipControlsProps {
   currentSpread: number
   totalPages: number
   totalSpreads: number
+  pagesPerSpread?: number
   onPrev: () => void
   onNext: () => void
+  onJumpToSpread?: (target: number) => void
   isAnimating: boolean
   onZoomIn?: () => void
   onZoomOut?: () => void
@@ -17,8 +19,10 @@ export function FlipControls({
   currentSpread,
   totalPages,
   totalSpreads,
+  pagesPerSpread = 2,
   onPrev,
   onNext,
+  onJumpToSpread,
   isAnimating,
   onZoomIn,
   onZoomOut,
@@ -28,13 +32,21 @@ export function FlipControls({
   const canGoPrev = currentSpread > 0
   const canGoNext = currentSpread < totalSpreads - 1
 
-  // Calculate the page numbers for the current spread
-  // Spread 0 = cover (page 1)
-  // Spread 1 = pages 2-3
-  // Spread N = pages (N*2), (N*2+1)
-  const isCoverSpread = currentSpread === 0
-  const leftPageNum = isCoverSpread ? -1 : (currentSpread - 1) * 2 + 2
-  const rightPageNum = isCoverSpread ? 1 : (currentSpread - 1) * 2 + 3
+  // Calculate the page numbers for the current spread.
+  // Two-page mode: spread 0 = cover (page 1); spread N = pages (N*2), (N*2+1).
+  // Single-page mode: spread index equals page index (0-based).
+  const isSinglePage = pagesPerSpread === 1
+  const isCoverSpread = !isSinglePage && currentSpread === 0
+  const leftPageNum = isSinglePage
+    ? -1
+    : isCoverSpread
+      ? -1
+      : (currentSpread - 1) * 2 + 2
+  const rightPageNum = isSinglePage
+    ? currentSpread + 1
+    : isCoverSpread
+      ? 1
+      : (currentSpread - 1) * 2 + 3
   const hasLeftPage = leftPageNum > 0 && leftPageNum <= totalPages
   const hasRightPage = rightPageNum <= totalPages
 
@@ -73,23 +85,30 @@ export function FlipControls({
 
       {/* Page indicator */}
       <div className='flex items-center gap-4'>
-        {/* Spread dots for small books (based on spreads, not pages) */}
-        {totalSpreads <= 10 && (
+        {totalSpreads <= 10 ? (
           <div className='flex items-center gap-1.5'>
             {Array.from({ length: totalSpreads }).map((_, i) => (
-              <div
+              <button
                 key={i}
+                onClick={() => onJumpToSpread?.(i)}
+                aria-label={`Go to spread ${i + 1}`}
                 className={`
                   w-2 h-2 rounded-full transition-all duration-300
-                  ${
-                    i === currentSpread
-                      ? 'bg-[#16a34a] scale-125'
-                      : 'bg-white/30 hover:bg-white/50'
-                  }
+                  ${i === currentSpread
+                    ? 'bg-[#16a34a] scale-125'
+                    : 'bg-white/30 hover:bg-white/50'}
                 `}
               />
             ))}
           </div>
+        ) : (
+          <PageJumpInput
+            currentSpread={currentSpread}
+            totalSpreads={totalSpreads}
+            totalPages={totalPages}
+            pagesPerSpread={pagesPerSpread}
+            onJumpToSpread={onJumpToSpread}
+          />
         )}
 
         {/* Page counter - show current spread's page range */}
@@ -227,5 +246,67 @@ export function FlipControls({
         </>
       )}
     </div>
+  )
+}
+
+function PageJumpInput({
+  currentSpread,
+  totalSpreads,
+  totalPages,
+  pagesPerSpread,
+  onJumpToSpread
+}: {
+  currentSpread: number
+  totalSpreads: number
+  totalPages: number
+  pagesPerSpread: number
+  onJumpToSpread?: (target: number) => void
+}) {
+  const pageToSpread = (page: number) => {
+    // Single-page mode: spread index = page index (0-based). page 1 -> spread 0.
+    if (pagesPerSpread === 1) return page - 1
+    // Two-page mode: cover holds page 1, subsequent spreads hold 2 pages.
+    return page <= 1 ? 0 : Math.ceil((page - 1) / 2)
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const form = e.currentTarget
+    const input = form.elements.namedItem('page') as HTMLInputElement
+    const n = parseInt(input.value, 10)
+    if (!Number.isFinite(n) || n < 1) return
+    const page = Math.min(totalPages, n)
+    const targetSpread = pageToSpread(page)
+    onJumpToSpread?.(Math.max(0, Math.min(totalSpreads - 1, targetSpread)))
+    input.blur()
+  }
+
+  const coverPage =
+    pagesPerSpread === 1
+      ? currentSpread + 1
+      : currentSpread === 0
+        ? 1
+        : (currentSpread - 1) * 2 + 2
+
+  return (
+    <form onSubmit={handleSubmit} className='flex items-center gap-2'>
+      <label className='sr-only' htmlFor='page-jump'>Ir a la página</label>
+      <input
+        id='page-jump'
+        name='page'
+        type='number'
+        min={1}
+        max={totalPages}
+        defaultValue={coverPage}
+        key={currentSpread}
+        className='w-14 px-2 py-1 text-sm bg-white/10 border border-white/20 rounded text-white text-center focus:outline-none focus:border-[#16a34a]'
+      />
+      <button
+        type='submit'
+        className='text-xs text-white/70 hover:text-white transition-colors'
+      >
+        Ir
+      </button>
+    </form>
   )
 }

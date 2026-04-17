@@ -9,6 +9,7 @@ interface EmbedViewerWrapperProps {
   title: string
   showWatermark: boolean
   autoFlipSeconds: number
+  pageAspectRatio?: number
 }
 
 export function EmbedViewerWrapper({
@@ -16,7 +17,8 @@ export function EmbedViewerWrapper({
   pages,
   title,
   showWatermark,
-  autoFlipSeconds
+  autoFlipSeconds,
+  pageAspectRatio
 }: EmbedViewerWrapperProps) {
   const analyticsIdRef = useRef<string | null>(null)
   const pagesViewedRef = useRef(new Set<number>())
@@ -121,18 +123,20 @@ export function EmbedViewerWrapper({
       navigator.sendBeacon('/api/analytics', data)
     }
 
-    const interval = setInterval(updateAnalytics, 30000)
-
-    window.addEventListener('beforeunload', updateAnalytics)
-    window.addEventListener('visibilitychange', () => {
+    const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         updateAnalytics()
       }
-    })
+    }
+
+    const interval = setInterval(updateAnalytics, 30000)
+    window.addEventListener('beforeunload', updateAnalytics)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       clearInterval(interval)
       window.removeEventListener('beforeunload', updateAnalytics)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       updateAnalytics()
     }
   }, [])
@@ -145,6 +149,7 @@ export function EmbedViewerWrapper({
       autoFlipSeconds={autoFlipSeconds}
       onPageChange={handlePageChange}
       className='h-full'
+      pageAspectRatio={pageAspectRatio}
     />
   )
 }

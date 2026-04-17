@@ -67,15 +67,28 @@ export async function uploadRenderedPages(
 export async function updateBookWithPages(
   bookId: string,
   pagesUrls: string[],
-  pageCount: number
+  pageCount: number,
+  pageAspectRatio?: number
 ): Promise<void> {
   const supabase = createClient()
+
+  const { data: existing } = await supabase
+    .from('fb_books')
+    .select('settings')
+    .eq('id', bookId)
+    .single()
+
+  const settings = {
+    ...((existing?.settings as Record<string, unknown>) || {}),
+    ...(pageAspectRatio ? { page_aspect_ratio: pageAspectRatio } : {})
+  }
 
   const { error } = await supabase
     .from('fb_books')
     .update({
       pages_urls: pagesUrls,
       page_count: pageCount,
+      settings,
       status: 'ready'
     })
     .eq('id', bookId)
