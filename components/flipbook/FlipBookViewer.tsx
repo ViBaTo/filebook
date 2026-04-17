@@ -59,22 +59,38 @@ export function FlipBookViewer({
   const MAX_RETRIES = 2
 
   const [transitionEnabled, setTransitionEnabled] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(max-width: 640px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
 
   const totalPages = pages.length
 
-  // Spread 0 = cover only (page 0)
-  // Spread 1 = pages 1-2
-  // Spread 2 = pages 3-4, etc.
-  // Total spreads = 1 (cover) + ceil((totalPages - 1) / 2)
-  const totalSpreads = 1 + Math.ceil((totalPages - 1) / 2)
+  const pagesPerSpread = isMobile ? 1 : 2
+  const totalSpreads =
+    pagesPerSpread === 1 ? totalPages : 1 + Math.ceil((totalPages - 1) / 2)
 
-  // Calculate page indices for current spread
-  const isCoverSpread = currentSpread === 0
+  // Clamp currentSpread if layout changes (e.g. rotate)
+  useEffect(() => {
+    setCurrentSpread((prev) => Math.min(prev, Math.max(0, totalSpreads - 1)))
+  }, [totalSpreads])
 
-  // For cover spread: only show page 0 on the right
-  // For other spreads: left = (spread-1)*2 + 1, right = (spread-1)*2 + 2
-  const leftPageIndex = isCoverSpread ? -1 : (currentSpread - 1) * 2 + 1
-  const rightPageIndex = isCoverSpread ? 0 : (currentSpread - 1) * 2 + 2
+  const isCoverSpread = pagesPerSpread === 2 && currentSpread === 0
+
+  const leftPageIndex =
+    pagesPerSpread === 1 ? -1 : isCoverSpread ? -1 : (currentSpread - 1) * 2 + 1
+  const rightPageIndex =
+    pagesPerSpread === 1
+      ? currentSpread
+      : isCoverSpread
+        ? 0
+        : (currentSpread - 1) * 2 + 2
   const hasLeftPage = leftPageIndex >= 0 && leftPageIndex < totalPages
   const hasRightPage = rightPageIndex < totalPages
 
@@ -299,15 +315,18 @@ export function FlipBookViewer({
           setFlipDirection(null)
           setIsAnimating(false)
 
-          // Report the left page index of the new spread
-          const newLeftPageIndex =
-            newSpread === 0 ? 0 : (newSpread - 1) * 2 + 1
-          onPageChange?.(newLeftPageIndex)
+          const reportedPage =
+            pagesPerSpread === 1
+              ? newSpread
+              : newSpread === 0
+                ? 0
+                : (newSpread - 1) * 2 + 1
+          onPageChange?.(reportedPage)
         }
       }
       requestAnimationFrame(animate)
     },
-    [isAnimating, currentSpread, totalSpreads, onPageChange]
+    [isAnimating, currentSpread, totalSpreads, onPageChange, pagesPerSpread]
   )
 
   const goToNext = useCallback(() => goToSpread('next'), [goToSpread])
@@ -321,10 +340,15 @@ export function FlipBookViewer({
       currentZoomRef.current = 1
       setCurrentZoom(1)
       setCurrentSpread(clamped)
-      const newLeftPageIndex = clamped === 0 ? 0 : (clamped - 1) * 2 + 1
-      onPageChange?.(newLeftPageIndex)
+      const reportedPage =
+        pagesPerSpread === 1
+          ? clamped
+          : clamped === 0
+            ? 0
+            : (clamped - 1) * 2 + 1
+      onPageChange?.(reportedPage)
     },
-    [isAnimating, totalSpreads, currentSpread, onPageChange]
+    [isAnimating, totalSpreads, currentSpread, onPageChange, pagesPerSpread]
   )
 
   // Keyboard navigation
@@ -474,21 +498,28 @@ export function FlipBookViewer({
     </div>
   )
 
-  // Calculate next spread page indices for animation
+  const spreadToLeftIndex = (s: number) => {
+    if (pagesPerSpread === 1) return -1
+    if (s <= 0) return -1
+    return (s - 1) * 2 + 1
+  }
+  const spreadToRightIndex = (s: number) => {
+    if (pagesPerSpread === 1) return s
+    if (s === 0) return 0
+    return (s - 1) * 2 + 2
+  }
+
   const nextSpread = currentSpread + 1
-  const nextSpreadLeftIndex = nextSpread === 0 ? -1 : (nextSpread - 1) * 2 + 1
-  const nextSpreadRightIndex = nextSpread === 0 ? 0 : (nextSpread - 1) * 2 + 2
-
-  // Calculate previous spread page indices for animation
   const prevSpread = currentSpread - 1
-  const prevSpreadLeftIndex =
-    prevSpread === 0 ? -1 : prevSpread > 0 ? (prevSpread - 1) * 2 + 1 : -1
-  const prevSpreadRightIndex =
-    prevSpread === 0 ? 0 : prevSpread > 0 ? (prevSpread - 1) * 2 + 2 : -1
+  const nextSpreadLeftIndex = spreadToLeftIndex(nextSpread)
+  const nextSpreadRightIndex = spreadToRightIndex(nextSpread)
+  const prevSpreadLeftIndex = spreadToLeftIndex(prevSpread)
+  const prevSpreadRightIndex = spreadToRightIndex(prevSpread)
 
-  // Spread ratio = two pages side by side when open. Cover keeps the same
-  // container ratio so the layout doesn't jump when the book opens.
-  const spreadAspectRatio = pageAspectRatio * 2
+  // Spread ratio = two pages side by side when open (or one page on mobile).
+  // Cover keeps the same container ratio so the layout doesn't jump when the
+  // book opens.
+  const spreadAspectRatio = pageAspectRatio * pagesPerSpread
 
   const isZoomed = currentZoom > 1
 
@@ -581,7 +612,7 @@ export function FlipBookViewer({
 
         {/* Right page container */}
         <div
-          className={`relative h-full ${isCoverSpread ? 'w-full flex items-center justify-center' : 'w-1/2'}`}
+          className={`relative h-full ${pagesPerSpread === 1 || isCoverSpread ? 'w-full' : 'w-1/2'}`}
           style={{ transformStyle: 'preserve-3d' }}
         >
           {flipDirection === 'next' &&
