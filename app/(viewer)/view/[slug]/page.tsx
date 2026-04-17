@@ -125,8 +125,10 @@ export default async function ViewPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* Main viewer */}
-      <main className='h-svh pt-12 sm:pt-16'>
+      {/* Main viewer — paddingTop mirrors the header's own safe-area
+          inset so notched iPhones don't clip the viewer's top edge.
+          40px ≈ logo icon (24) + header vertical padding (16). */}
+      <main className='h-svh pt-[calc(max(env(safe-area-inset-top,0px),8px)+40px)] sm:pt-16'>
         <FlipBookViewerWrapper
           bookId={book.id}
           pages={pagesUrls}
