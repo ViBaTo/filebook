@@ -9,6 +9,7 @@ interface EmbedViewerWrapperProps {
   title: string
   showWatermark: boolean
   autoFlipSeconds: number
+  pageAspectRatio?: number
 }
 
 export function EmbedViewerWrapper({
@@ -16,7 +17,8 @@ export function EmbedViewerWrapper({
   pages,
   title,
   showWatermark,
-  autoFlipSeconds
+  autoFlipSeconds,
+  pageAspectRatio
 }: EmbedViewerWrapperProps) {
   const analyticsIdRef = useRef<string | null>(null)
   const pagesViewedRef = useRef(new Set<number>())
@@ -147,6 +149,7 @@ export function EmbedViewerWrapper({
       autoFlipSeconds={autoFlipSeconds}
       onPageChange={handlePageChange}
       className='h-full'
+      pageAspectRatio={pageAspectRatio}
     />
   )
 }

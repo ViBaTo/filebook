@@ -10,6 +10,7 @@ interface FlipBookViewerWrapperProps {
   showWatermark: boolean
   autoFlipSeconds: number
   ownerName?: string | null
+  pageAspectRatio?: number
 }
 
 export function FlipBookViewerWrapper({
@@ -18,7 +19,8 @@ export function FlipBookViewerWrapper({
   title,
   showWatermark,
   autoFlipSeconds,
-  ownerName
+  ownerName,
+  pageAspectRatio
 }: FlipBookViewerWrapperProps) {
   const analyticsIdRef = useRef<string | null>(null)
   const pagesViewedRef = useRef(new Set<number>())
@@ -107,6 +109,7 @@ export function FlipBookViewerWrapper({
       autoFlipSeconds={autoFlipSeconds}
       onPageChange={handlePageChange}
       ownerName={ownerName}
+      pageAspectRatio={pageAspectRatio}
     />
   )
 }

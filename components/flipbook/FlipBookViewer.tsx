@@ -14,6 +14,7 @@ interface FlipBookViewerProps {
   onPageChange?: (page: number) => void
   className?: string
   ownerName?: string | null
+  pageAspectRatio?: number
 }
 
 const FLIP_DURATION = 600 // ms
@@ -29,7 +30,8 @@ export function FlipBookViewer({
   autoFlipSeconds = 0,
   onPageChange,
   className = '',
-  ownerName
+  ownerName,
+  pageAspectRatio = 1 / 1.414
 }: FlipBookViewerProps) {
   // currentSpread tracks which two-page spread we're viewing
   // Spread 0 = cover only, Spread 1 = pages 1-2, etc.
@@ -391,6 +393,10 @@ export function FlipBookViewer({
   const isZoomed = currentZoom > 1
   const zoomedWidth = isZoomed && baseWidth > 0 ? baseWidth * currentZoom : undefined
 
+  // Spread ratio = two pages side by side when open. Cover keeps the same
+  // container ratio so the layout doesn't jump when the book opens.
+  const spreadAspectRatio = pageAspectRatio * 2
+
   return (
     <div className={`relative w-full h-full flex flex-col ${className}`}>
       {/* Title & Owner */}
@@ -431,7 +437,7 @@ export function FlipBookViewer({
             className={`relative select-none ${!zoomedWidth ? 'w-full max-w-7xl' : ''}`}
             style={{
               ...(zoomedWidth ? { width: `${zoomedWidth}px` } : {}),
-              aspectRatio: '2.8 / 1',
+              aspectRatio: `${spreadAspectRatio} / 1`,
               transition: 'width 0.3s ease',
             }}
             onTouchStart={handleTouchStart}

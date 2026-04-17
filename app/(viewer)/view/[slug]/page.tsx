@@ -131,6 +131,7 @@ export default async function ViewPage({ params }: PageProps) {
           showWatermark={book.is_anonymous}
           autoFlipSeconds={book.settings?.auto_flip_seconds || 0}
           ownerName={owner?.full_name || null}
+          pageAspectRatio={book.settings?.page_aspect_ratio}
         />
       </main>
     </div>

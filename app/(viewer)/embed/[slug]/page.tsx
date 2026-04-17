@@ -73,6 +73,7 @@ export default async function EmbedPage({ params }: PageProps) {
         title={book.title}
         showWatermark={book.is_anonymous}
         autoFlipSeconds={book.settings?.auto_flip_seconds || 0}
+        pageAspectRatio={book.settings?.page_aspect_ratio}
       />
     </div>
   )
