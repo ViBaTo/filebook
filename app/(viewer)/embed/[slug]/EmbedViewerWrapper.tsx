@@ -121,18 +121,20 @@ export function EmbedViewerWrapper({
       navigator.sendBeacon('/api/analytics', data)
     }
 
-    const interval = setInterval(updateAnalytics, 30000)
-
-    window.addEventListener('beforeunload', updateAnalytics)
-    window.addEventListener('visibilitychange', () => {
+    const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         updateAnalytics()
       }
-    })
+    }
+
+    const interval = setInterval(updateAnalytics, 30000)
+    window.addEventListener('beforeunload', updateAnalytics)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       clearInterval(interval)
       window.removeEventListener('beforeunload', updateAnalytics)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       updateAnalytics()
     }
   }, [])

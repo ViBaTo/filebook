@@ -70,7 +70,6 @@ export function FlipBookViewerWrapper({
       const timeSpent = Math.floor((Date.now() - startTime) / 1000)
       const pagesViewed = pagesViewedRef.current.size
 
-      // Use sendBeacon for reliable delivery on page close
       const data = JSON.stringify({
         id: analyticsIdRef.current,
         pages_viewed: pagesViewed,
@@ -81,20 +80,20 @@ export function FlipBookViewerWrapper({
       navigator.sendBeacon('/api/analytics', data)
     }
 
-    // Update every 30 seconds
-    const interval = setInterval(updateAnalytics, 30000)
-
-    // Update on page close
-    window.addEventListener('beforeunload', updateAnalytics)
-    window.addEventListener('visibilitychange', () => {
+    const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         updateAnalytics()
       }
-    })
+    }
+
+    const interval = setInterval(updateAnalytics, 30000)
+    window.addEventListener('beforeunload', updateAnalytics)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       clearInterval(interval)
       window.removeEventListener('beforeunload', updateAnalytics)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       updateAnalytics()
     }
   }, [])
