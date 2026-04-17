@@ -1,10 +1,13 @@
 'use client'
 
+import { ProgressScrubber } from './ProgressScrubber'
+
 interface FlipControlsProps {
   currentSpread: number
   totalPages: number
   totalSpreads: number
   pagesPerSpread?: number
+  isMobile?: boolean
   onPrev: () => void
   onNext: () => void
   onJumpToSpread?: (target: number) => void
@@ -20,6 +23,7 @@ export function FlipControls({
   totalPages,
   totalSpreads,
   pagesPerSpread = 2,
+  isMobile = false,
   onPrev,
   onNext,
   onJumpToSpread,
@@ -53,7 +57,7 @@ export function FlipControls({
   const isZoomed = currentZoom > 1.05
 
   return (
-    <div className='flex items-center justify-center gap-6 py-4'>
+    <div className={`flex items-center ${isMobile ? 'justify-between px-3 py-3 gap-2' : 'justify-center gap-6 py-4'}`}>
       {/* Previous button */}
       <button
         onClick={onPrev}
@@ -84,8 +88,16 @@ export function FlipControls({
       </button>
 
       {/* Page indicator */}
-      <div className='flex items-center gap-4'>
-        {totalSpreads <= 10 ? (
+      <div className={`flex items-center ${isMobile ? 'flex-1 min-w-0 gap-2' : 'gap-4'}`}>
+        {isMobile ? (
+          onJumpToSpread && (
+            <ProgressScrubber
+              currentSpread={currentSpread}
+              totalSpreads={totalSpreads}
+              onJumpToSpread={onJumpToSpread}
+            />
+          )
+        ) : totalSpreads <= 10 ? (
           <div className='flex items-center gap-1.5'>
             {Array.from({ length: totalSpreads }).map((_, i) => (
               <button
@@ -111,20 +123,22 @@ export function FlipControls({
           />
         )}
 
-        {/* Page counter - show current spread's page range */}
-        <div className='text-white/70 text-sm font-medium min-w-[80px] text-center'>
-          <span className='text-white'>
-            {isCoverSpread
-              ? '1'
-              : hasLeftPage && hasRightPage
-                ? `${leftPageNum}-${rightPageNum}`
-                : hasLeftPage
-                  ? leftPageNum
-                  : rightPageNum}
-          </span>
-          <span className='mx-1'>/</span>
-          <span>{totalPages}</span>
-        </div>
+        {/* Page counter — scrubber already shows this in mobile */}
+        {!isMobile && (
+          <div className='text-white/70 text-sm font-medium min-w-[80px] text-center'>
+            <span className='text-white'>
+              {isCoverSpread
+                ? '1'
+                : hasLeftPage && hasRightPage
+                  ? `${leftPageNum}-${rightPageNum}`
+                  : hasLeftPage
+                    ? leftPageNum
+                    : rightPageNum}
+            </span>
+            <span className='mx-1'>/</span>
+            <span>{totalPages}</span>
+          </div>
+        )}
       </div>
 
       {/* Next button */}

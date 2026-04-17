@@ -890,6 +890,7 @@ export function FlipBookViewer({
             totalPages={totalPages}
             totalSpreads={totalSpreads}
             pagesPerSpread={pagesPerSpread}
+            isMobile={isMobile}
             onPrev={goToPrev}
             onNext={goToNext}
             onJumpToSpread={jumpToSpread}
