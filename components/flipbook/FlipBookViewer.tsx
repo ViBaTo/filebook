@@ -69,18 +69,14 @@ export function FlipBookViewer({
   const showChromeBriefly = useCallback(() => setChromeVisible(true), [])
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
-  // Single-page vs two-page mode. Uses both width AND available height:
-  // on landscape phones (844×390) the width is > 640 but the spread is too
-  // short vertically to feel comfortable — fall back to single-page there too.
+  // Single-page vs two-page mode. If the shortest viewport dimension is
+  // below 500 px, use single-page — covers portrait phones, landscape
+  // phones (low height), and keeps two-page on tablets/desktops.
   useEffect(() => {
     if (typeof window === 'undefined') return
     const compute = () => {
-      const w = window.innerWidth
-      const h = window.innerHeight
-      const smallWidth = w <= 640
-      const spreadH = w / (pageAspectRatio * 2)
-      const crampedHeight = spreadH < h * 0.4
-      setIsMobile(smallWidth || crampedHeight)
+      const shortestSide = Math.min(window.innerWidth, window.innerHeight)
+      setIsMobile(shortestSide <= 500)
     }
     compute()
     window.addEventListener('resize', compute)
@@ -89,7 +85,7 @@ export function FlipBookViewer({
       window.removeEventListener('resize', compute)
       window.removeEventListener('orientationchange', compute)
     }
-  }, [pageAspectRatio])
+  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -612,8 +608,8 @@ export function FlipBookViewer({
         className='absolute inset-0 flex'
         style={{ transformStyle: 'preserve-3d' }}
       >
-        {/* Left page container */}
-        {!isCoverSpread && (
+        {/* Left page container — only in two-page mode when not on cover */}
+        {pagesPerSpread === 2 && !isCoverSpread && (
           <div
             className='relative w-1/2 h-full'
             style={{ transformStyle: 'preserve-3d' }}
@@ -821,7 +817,7 @@ export function FlipBookViewer({
         className='flex-1 overflow-auto'
       >
         <div
-          className='flex items-center justify-center p-2 sm:p-4 h-full'
+          className={`flex items-center justify-center h-full ${isMobile ? 'p-0' : 'p-4'}`}
           style={{
             minHeight: '100%',
             minWidth: isZoomed ? 'fit-content' : '100%'
@@ -867,12 +863,12 @@ export function FlipBookViewer({
           ) : (
             <div
               ref={containerRef}
-              className='relative select-none mx-auto'
+              className='relative select-none'
               style={{
                 aspectRatio: `${spreadAspectRatio} / 1`,
                 width: '100%',
-                maxWidth: `min(100%, calc((100vh - var(--viewer-chrome-height, 0px)) * ${spreadAspectRatio}))`,
-                maxHeight: '100%'
+                maxHeight: '100%',
+                margin: 'auto'
               }}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
