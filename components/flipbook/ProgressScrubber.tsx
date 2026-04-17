@@ -5,15 +5,17 @@ import { useRef, useState } from 'react'
 interface ProgressScrubberProps {
   currentSpread: number
   totalSpreads: number
+  totalPages: number
   onJumpToSpread: (target: number) => void
 }
 
 // Barra horizontal con handle. Tap → salta a esa página. Drag con pointer
-// events (unifica mouse + touch). El label muestra el número en vivo
-// mientras se arrastra.
+// events (unifica mouse + touch). El label muestra el número de página en
+// vivo mientras se arrastra (más intuitivo que "spread" para el lector).
 export function ProgressScrubber({
   currentSpread,
   totalSpreads,
+  totalPages,
   onJumpToSpread
 }: ProgressScrubberProps) {
   const trackRef = useRef<HTMLDivElement>(null)
@@ -50,10 +52,20 @@ export function ProgressScrubber({
   const pct =
     totalSpreads > 1 ? (displaySpread / (totalSpreads - 1)) * 100 : 0
 
+  // Convert spread index to a page label. Spread 0 is the cover (page 1);
+  // subsequent spreads hold pages (N*2, N*2+1) clamped to totalPages.
+  const pageLabel = (() => {
+    if (displaySpread === 0) return '1'
+    const left = (displaySpread - 1) * 2 + 2
+    const right = left + 1
+    if (right > totalPages) return String(Math.min(left, totalPages))
+    return `${left}–${right}`
+  })()
+
   return (
     <div className='flex items-center gap-3 flex-1 min-w-0'>
       <span className='text-xs text-white/70 tabular-nums shrink-0'>
-        {displaySpread + 1}
+        {pageLabel}
       </span>
       <div
         ref={trackRef}
@@ -61,6 +73,7 @@ export function ProgressScrubber({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       >
         <div className='absolute inset-x-0 h-1 bg-white/20 rounded-full' />
         <div
@@ -73,7 +86,7 @@ export function ProgressScrubber({
         />
       </div>
       <span className='text-xs text-white/70 tabular-nums shrink-0'>
-        {totalSpreads}
+        {totalPages}
       </span>
     </div>
   )

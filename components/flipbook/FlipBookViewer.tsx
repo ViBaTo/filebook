@@ -780,13 +780,9 @@ export function FlipBookViewer({
     </div>
   )
 
-  const chromeHeightPx =
-    ((title || ownerName) && !isMobile ? 48 : 0) + (showControls ? 64 : 0) + 8
-
   return (
     <div
       className={`relative w-full h-full flex flex-col ${className}`}
-      style={{ ['--viewer-chrome-height' as string]: `${chromeHeightPx}px` }}
     >
       {/* Title & Owner — hidden on mobile (page header already shows branding) */}
       {(title || ownerName) && !isMobile && (
@@ -849,15 +845,7 @@ export function FlipBookViewer({
                 onDoubleClick={handleDoubleClick}
                 onTransitionEnd={() => setTransitionEnabled(false)}
               >
-                <div className='relative w-full h-full'>
-                  {bookInner}
-                  <TapZones
-                    onPrev={goToPrev}
-                    onNext={goToNext}
-                    onToggleChrome={toggleChrome}
-                    enabled={!isZoomed}
-                  />
-                </div>
+                {bookInner}
               </div>
             </div>
           ) : (
@@ -882,6 +870,7 @@ export function FlipBookViewer({
                   onNext={goToNext}
                   onToggleChrome={toggleChrome}
                   enabled={!isZoomed}
+                  isMobile={isMobile}
                 />
               </div>
             </div>

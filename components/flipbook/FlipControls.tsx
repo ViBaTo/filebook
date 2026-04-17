@@ -102,6 +102,7 @@ export function FlipControls({
             <ProgressScrubber
               currentSpread={currentSpread}
               totalSpreads={totalSpreads}
+              totalPages={totalPages}
               onJumpToSpread={onJumpToSpread}
             />
           )
