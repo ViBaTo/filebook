@@ -56,7 +56,7 @@ export function FlipPage({
     >
       {/* Front face - current page content */}
       <div
-        className={`absolute inset-0 ${frontRounding} overflow-hidden bg-[#FAFAF9]`}
+        className={`absolute inset-0 ${frontRounding} overflow-hidden bg-paper`}
         style={{
           backfaceVisibility: 'hidden'
         }}
@@ -72,7 +72,7 @@ export function FlipPage({
             draggable={false}
           />
         ) : (
-          <div className='w-full h-full flex items-center justify-center bg-gray-100'>
+          <div className='w-full h-full flex items-center justify-center'>
             <div className='w-8 h-8 border-2 border-gray-300 border-t-[#16a34a] rounded-full animate-spin' />
           </div>
         )}
@@ -87,13 +87,13 @@ export function FlipPage({
 
       {/* Back face - other page content */}
       <div
-        className={`absolute inset-0 ${backRounding} overflow-hidden bg-[#FAFAF9]`}
+        className={`absolute inset-0 ${backRounding} overflow-hidden bg-paper`}
         style={{
           backfaceVisibility: 'hidden',
           transform: 'rotateY(180deg)'
         }}
       >
-        {backImage ? (
+        {backImage && (
           <NextImage
             src={backImage}
             alt='Page back'
@@ -103,8 +103,6 @@ export function FlipPage({
             className='object-contain'
             draggable={false}
           />
-        ) : (
-          <div className='w-full h-full bg-[#FAFAF9]' />
         )}
         {/* Shadow overlay on back face */}
         {!showFront && (
