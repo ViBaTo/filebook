@@ -595,7 +595,7 @@ export function FlipBookViewer({
             {flipDirection === 'prev' &&
               prevSpreadLeftIndex >= 0 &&
               prevSpreadLeftIndex < totalPages && (
-                <div className='absolute inset-0 bg-transparent overflow-hidden'>
+                <div className='absolute inset-0 bg-[#FAFAF9] overflow-hidden'>
                   {isPageLoaded(prevSpreadLeftIndex) ? (
                     <NextImage
                       src={pages[prevSpreadLeftIndex]}
@@ -615,13 +615,13 @@ export function FlipBookViewer({
               )}
 
             {flipDirection === 'prev' && prevSpread === 0 && (
-              <div className='absolute inset-0 bg-transparent overflow-hidden'>
-                <div className='w-full h-full bg-transparent' />
+              <div className='absolute inset-0 bg-[#FAFAF9] overflow-hidden'>
+                <div className='w-full h-full bg-[#FAFAF9]' />
               </div>
             )}
 
             {flipDirection !== 'prev' && (
-              <div className='absolute inset-0 bg-transparent overflow-hidden'>
+              <div className='absolute inset-0 bg-[#FAFAF9] overflow-hidden'>
                 {hasLeftPage && isPageLoaded(leftPageIndex) ? (
                   <NextImage
                     src={pages[leftPageIndex]}
@@ -637,7 +637,7 @@ export function FlipBookViewer({
                 ) : hasLeftPage ? (
                   renderSpinner()
                 ) : (
-                  <div className='w-full h-full bg-transparent' />
+                  <div className='w-full h-full bg-[#FAFAF9]' />
                 )}
               </div>
             )}
@@ -670,7 +670,7 @@ export function FlipBookViewer({
         >
           {flipDirection === 'next' &&
             nextSpreadRightIndex < totalPages && (
-              <div className='absolute inset-0 bg-transparent overflow-hidden'>
+              <div className='absolute inset-0 bg-[#FAFAF9] overflow-hidden'>
                 {isPageLoaded(nextSpreadRightIndex) ? (
                   <NextImage
                     src={pages[nextSpreadRightIndex]}
@@ -691,7 +691,7 @@ export function FlipBookViewer({
 
           {flipDirection !== 'next' && (
             <div
-              className={`${isCoverSpread ? 'relative w-1/2 h-full' : 'absolute inset-0'} bg-transparent overflow-hidden`}
+              className={`${isCoverSpread ? 'relative w-1/2 h-full' : 'absolute inset-0'} bg-[#FAFAF9] overflow-hidden`}
             >
               {hasRightPage && isPageLoaded(rightPageIndex) ? (
                 <NextImage
@@ -708,7 +708,7 @@ export function FlipBookViewer({
               ) : hasRightPage ? (
                 renderSpinner()
               ) : (
-                <div className='w-full h-full bg-transparent' />
+                <div className='w-full h-full bg-[#FAFAF9]' />
               )}
             </div>
           )}
